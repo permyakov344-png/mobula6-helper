@@ -42,6 +42,8 @@ public final class UsbSerial {
     private UsbEndpoint epIn;
     private UsbEndpoint epOut;
     private UsbInterface iface;
+    private UsbInterface commIface;
+    private int commId = 0;
     private String openName;
     private int baud = 115200;
     private Activity act;
@@ -121,11 +123,19 @@ public final class UsbSerial {
     }
 
     private String openDevice(UsbDevice dev) {
-        // Ищем интерфейс с парой bulk IN/OUT — это и есть данные порта.
+        // CDC-устройство состоит из двух интерфейсов: управляющего (класс 2,
+        // через него идут команды скорости и DTR/RTS) и данных (класс 10,
+        // в нём лежит пара bulk IN/OUT). Номер управляющего интерфейса нужен
+        // как wIndex в controlTransfer — на части телефонов он не 0, и без
+        // этого порт открывается, но молчит.
         UsbInterface dataIface = null;
+        UsbInterface comm = null;
         UsbEndpoint in = null, out = null;
         for (int i = 0; i < dev.getInterfaceCount(); i++) {
             UsbInterface it = dev.getInterface(i);
+            if (comm == null && it.getInterfaceClass() == UsbConstants.USB_CLASS_COMM) {
+                comm = it;
+            }
             UsbEndpoint a = null, b = null;
             for (int e = 0; e < it.getEndpointCount(); e++) {
                 UsbEndpoint ep = it.getEndpoint(e);
@@ -133,8 +143,8 @@ public final class UsbSerial {
                 if (ep.getDirection() == UsbConstants.USB_DIR_IN) a = ep;
                 else b = ep;
             }
-            if (a != null && b != null) {
-                dataIface = it; in = a; out = b; break;
+            if (a != null && b != null && dataIface == null) {
+                dataIface = it; in = a; out = b;
             }
         }
         if (dataIface == null) return "Устройство не похоже на дрон (нет COM-порта).";
@@ -142,7 +152,14 @@ public final class UsbSerial {
         UsbDeviceConnection c = mgr.openDevice(dev);
         if (c == null) return "Не смог открыть USB. Закрой другие приложения с дроном.";
 
+        // Управляющий интерфейс может отсутствовать (нестандартная сборка) —
+        // тогда работаем как раньше, с номером 0.
+        if (comm != null && !c.claimInterface(comm, true)) {
+            c.close();
+            return "USB занят другой программой.";
+        }
         if (!c.claimInterface(dataIface, true)) {
+            if (comm != null) c.releaseInterface(comm);
             c.close();
             return "USB занят другой программой.";
         }
@@ -151,6 +168,8 @@ public final class UsbSerial {
         this.epIn = in;
         this.epOut = out;
         this.iface = dataIface;
+        this.commIface = comm;
+        this.commId = comm == null ? 0 : comm.getId();
         this.openName = String.format("%04X:%04X", dev.getVendorId(), dev.getProductId());
 
         // CDC: сообщаем скорость и поднимаем линии DTR/RTS.
@@ -179,9 +198,10 @@ public final class UsbSerial {
         control(0x22, on ? 0x03 : 0x00, null);
     }
 
+    /** SET_LINE_CODING / SET_CONTROL_LINE_STATE уходят на управляющий интерфейс. */
     private void control(int request, int value, byte[] data) {
         try {
-            conn.controlTransfer(0x21, request, value, 0,
+            conn.controlTransfer(0x21, request, value, commId,
                     data, data == null ? 0 : data.length, 1000);
         } catch (Exception ignored) {
         }
@@ -193,11 +213,13 @@ public final class UsbSerial {
                 if (conn != null) {
                     setControlLines(false);
                     if (iface != null) conn.releaseInterface(iface);
+                    if (commIface != null) conn.releaseInterface(commIface);
                     conn.close();
                 }
             } catch (Exception ignored) {
             }
-            conn = null; epIn = null; epOut = null; iface = null; openName = null;
+            conn = null; epIn = null; epOut = null; iface = null; commIface = null;
+            commId = 0; openName = null;
         }
     }
 
