@@ -7,6 +7,25 @@
 Работает одинаково на **Windows**, **macOS** и **Linux** — из одной и той же папки,
 ничего устанавливать не нужно.
 
+## Что скачать
+
+Выбери свою систему — остальное качать не нужно:
+
+| Система | Файл | Размер |
+|---|---|---|
+| **Windows** 10 / 11 (64-бит) | [Mobula6-Windows-1.0.0.zip](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-Windows-1.0.0.zip) | 12 МБ |
+| **macOS**, Apple Silicon (M1–M4) | [Mobula6-macOS-AppleSilicon-1.0.0.zip](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-macOS-AppleSilicon-1.0.0.zip) | 0,8 МБ |
+| **macOS**, Intel | [Mobula6-macOS-Intel-1.0.0.zip](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-macOS-Intel-1.0.0.zip) | 0,8 МБ |
+| **Linux** (64-бит) | [Mobula6-Linux-1.0.0.zip](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-Linux-1.0.0.zip) | 1 МБ |
+
+Не знаешь, какой у тебя Mac? Меню Apple → **Об этом Mac**. Если написано
+«Apple M1/M2/M3/M4» — бери Apple Silicon, если «Intel» — Intel.
+
+Распакуй архив и запусти `start.bat` (Windows) или `start.command` (macOS, Linux).
+
+Всё остальное — исходники, отдельные `dfu-util` под каждую систему, встроенный
+Python — лежит в репозитории, но для работы оно не нужно: в архивах уже всё есть.
+
 ## Как открыть
 
 **Windows:** двойной клик по **`start.bat`**.
