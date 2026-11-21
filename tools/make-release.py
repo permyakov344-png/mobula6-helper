@@ -23,6 +23,7 @@ COMMON = [
     "bridge.pl",
     "start.command",
     "start.bat",
+    "РАЗДАТЬ_APK_на_телефон.command",
     "README.md",
     "_lib",
     "docs",
@@ -63,6 +64,9 @@ def add(zf, rel, full, prefix):
     """Кладёт файл в архив, сохраняя бит исполнения и LF у .command/.pl."""
     arcname = os.path.join(prefix, rel)
     info = zipfile.ZipInfo.from_file(full, arcname)
+    # Русские имена (РАЗДАТЬ_APK..., КАК-ЗАПУСТИТЬ.txt) без этого флага
+    # распаковываются крякозябрами: Windows понимает только UTF-8 с флагом.
+    info.flag_bits |= 0x800
     info.compress_type = zipfile.ZIP_DEFLATED
     mode = os.stat(full).st_mode & 0o777
     if rel.endswith((".command", ".pl")) or mode & 0o111:
@@ -91,6 +95,7 @@ def build(version):
                     "3. Подключи дрон по USB и нажми «Подключить дрон».\n\n"
                     "Подробно — в README.md внутри папки.\n")
             info = zipfile.ZipInfo(os.path.join(prefix, "КАК-ЗАПУСТИТЬ.txt"))
+            info.flag_bits |= 0x800
             info.external_attr = (0o100000 | 0o644) << 16
             info.compress_type = zipfile.ZIP_DEFLATED
             zf.writestr(info, note.encode("utf-8"))
