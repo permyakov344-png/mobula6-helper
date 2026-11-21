@@ -1,5 +1,10 @@
 # Mobula6 — помощник для настройки
 
+**Скачать:** [Windows](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-Windows-1.0.0.zip) ·
+[macOS Apple Silicon](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-macOS-AppleSilicon-1.0.0.zip) ·
+[macOS Intel](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-macOS-Intel-1.0.0.zip) ·
+[Linux](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-Linux-1.0.0.zip)
+
 Простое приложение в браузере: показывает, подключён ли дрон, помогает связать его с пультом,
 позволяет менять пиды и «сложность» управления, настраивать видео и прошивать дрон.
 Без Betaflight Configurator.
