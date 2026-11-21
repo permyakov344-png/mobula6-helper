@@ -219,6 +219,9 @@ MSP по последовательному порту, 115200 бод, MSP v1 и
 Прошивка:
 
 - список версий: `GET https://build.betaflight.com/api/targets/<плата>`;
+  имя платы берётся из поля `boardName` в `MSP_BOARD_INFO`
+  (`CRAZYBEEF4SX1280`), а не из `target`: в прошивках 2026.x там лежит имя чипа
+  (`STM32F411`), и сервер на такой запрос отвечает `404`;
 - файл: `https://github.com/betaflight/betaflight/releases/download/<версия>/betaflight_<версия>_<MCU>_<плата>.hex`;
 - запись: `dfu-util -a 0 -d 0483:df11 -s 0x08000000:leave -D <файл>`.
 
