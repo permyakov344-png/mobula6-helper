@@ -67,6 +67,48 @@ fi
 
 echo "Движок: $ENGINE_NAME"
 
+# ---------------------------------------------------------------- уже запущен?
+#
+# Если помощник уже работает (прошлое окно не закрыли), второй запускать нельзя:
+# два процесса начнут делить один USB-порт, и половина ответов дрона потеряется.
+# Тогда просто открываем ту страницу, что уже есть.
+existing_port() {
+  if ! command -v curl >/dev/null 2>&1; then
+    return 1
+  fi
+  for p in $(seq 8000 8050); do
+    if curl -fsS -m 1 "http://127.0.0.1:$p/api/ping" 2>/dev/null | grep -q '"bridge"'; then
+      echo "$p"
+      return 0
+    fi
+  done
+  return 1
+}
+
+OLD_PORT="$(existing_port)"
+if [ -n "$OLD_PORT" ]; then
+  URL="http://localhost:$OLD_PORT/index.html"
+  echo
+  echo "Помощник уже запущен — открываю его страницу:"
+  echo "  $URL"
+  echo
+  echo "Второй раз запускать не нужно. Если хочешь перезапустить —"
+  echo "закрой то окно консоли и запусти этот файл снова."
+  if [ "$(uname -s)" = "Darwin" ]; then
+    BROWSER=""
+    for APP in "Google Chrome" "Microsoft Edge" "Chromium" "Yandex" "Opera" "Opera GX"; do
+      if [ -d "/Applications/$APP.app" ]; then BROWSER="$APP"; break; fi
+    done
+    if [ -n "$BROWSER" ]; then open -a "$BROWSER" "$URL"; else open "$URL"; fi
+  elif command -v xdg-open >/dev/null 2>&1; then
+    xdg-open "$URL" >/dev/null 2>&1 &
+  elif command -v gio >/dev/null 2>&1; then
+    gio open "$URL" >/dev/null 2>&1 &
+  fi
+  read -r -p "Нажми Enter, чтобы закрыть..." _
+  exit 0
+fi
+
 # ---------------------------------------------------------------- запуск
 #
 # Порт выбирает сам помощник и пишет его в port.txt — так адрес всегда верный,

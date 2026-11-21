@@ -36,7 +36,9 @@ sub find_fc_ports {
     # Ручное указание порта: MOBULA6_PORT=/dev/ttyUSB0 (или COM5).
     my $forced = $ENV{MOBULA6_PORT} // '';
     $forced =~ s/^\s+|\s+$//g;
-    push @found, $forced if length $forced;
+    # Если порт исчез (дрон отключили), дальше его не тащим — иначе вместо
+    # «дрон не найден» будет техническая ошибка про отсутствующий файл.
+    push @found, $forced if length $forced && ($forced =~ /^COM/i || -e $forced);
 
     if ($^O eq 'MSWin32') {
         # Windows: COM-порты. Дрон обычно называется «USB Serial Device»
@@ -899,6 +901,44 @@ for my $a (@ARGV) {
     if ($a eq '--open') { $open_browser = 1; next; }
     $start = $a if $a =~ /^\d+$/;
 }
+
+# Уже есть работающий помощник? Второй только помешает: два процесса начнут
+# делить USB-порт дрона, и часть ответов MSP потеряется.
+for my $p ($start .. $start + 50) {
+    my $probe = IO::Socket::INET->new(
+        PeerAddr => '127.0.0.1', PeerPort => $p,
+        Proto => 'tcp', Timeout => 0.3,
+    );
+    next unless $probe;
+    print $probe "GET /api/ping HTTP/1.0\r\n\r\n";
+    my $answer = '';
+    eval {
+        local $SIG{ALRM} = sub { die "timeout\n" };
+        alarm 1;
+        while (my $line = <$probe>) { $answer .= $line; last if length $answer > 800; }
+        alarm 0;
+    };
+    alarm 0;
+    close $probe;
+    next unless $answer =~ /"bridge"/;
+
+    if (open(my $pf, '>', 'port.txt')) {
+        print $pf $p;
+        close $pf;
+    }
+    print "=" x 46, "\n";
+    print "  Помощник уже запущен: http://localhost:$p/index.html\n";
+    print "=" x 46, "\n\n";
+    print "Второй раз запускать не нужно — открой страницу по адресу выше.\n";
+    print "Если что-то не работает, закрой то окно консоли и запусти снова.\n\n";
+    if ($open_browser) {
+        my $url = "http://localhost:$p/index.html";
+        if    ($^O eq 'MSWin32') { system('cmd', '/c', 'start', '""', $url); }
+        elsif ($^O eq 'darwin')  { system('open', $url); }
+    }
+    exit 0;
+}
+
 my $port  = $start;
 my $srv;
 

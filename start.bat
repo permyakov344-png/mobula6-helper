@@ -72,6 +72,25 @@ exit /b 1
 echo Движок: Python
 echo.
 
+rem Если помощник уже запущен (прошлое окно не закрыли), второй запускать
+rem нельзя: два процесса начнут делить USB-порт, и ответы дрона потеряются.
+rem Спрашиваем именно помощника (/api/ping), а не «занят ли порт»: на 8000
+rem может висеть что-то постороннее.
+set "OLDPORT="
+for /f "delims=" %%p in ('powershell -NoProfile -Command "foreach($p in 8000..8050){try{$r=Invoke-RestMethod -Uri ('http://127.0.0.1:'+$p+'/api/ping') -TimeoutSec 1; if($r.bridge){$p;break}}catch{}}" 2^>nul') do set "OLDPORT=%%p"
+
+if defined OLDPORT (
+    echo Помощник уже запущен — открываю его страницу:
+    echo   http://localhost:%OLDPORT%/index.html
+    echo.
+    echo Второй раз запускать не нужно. Если хочешь перезапустить —
+    echo закрой то окно консоли и запусти этот файл снова.
+    echo.
+    start "" "http://localhost:%OLDPORT%/index.html"
+    pause
+    exit /b 0
+)
+
 if exist "port.txt" del "port.txt" >nul 2>nul
 
 rem Помощник сам откроет страницу в браузере и напишет адрес.

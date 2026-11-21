@@ -1607,8 +1607,22 @@ async function findFirmware() {
     $('fwSaveBox').classList.remove('hide');
     toast('Нашёл ' + list.length + ' версий');
   } catch (e) {
-    fwShow('Не смог получить список: ' + escHtml(e.message || e) +
-      '<br>Проверь интернет на компьютере и попробуй ещё раз.', 'bad');
+    // Различаем «нет помощника» и «сервер прошивок молчит»: советы разные.
+    const bridge = await bridgeAvailable();
+    const msg = String((e && e.message) || e);
+    if (!bridge) {
+      fwShow('Помощник не отвечает — список прошивок брать не откуда.<br>' +
+        'Закрой окно консоли и запусти <b>start</b> заново.', 'bad');
+    } else if (/не знает такую плату|Не понял/.test(msg)) {
+      fwShow('Не смог получить список: ' + escHtml(msg) +
+        '<br>Нажми «Подключить дрон» заново — приложение перечитает плату.', 'bad');
+    } else if (/недоступен|timed out|timeout|urlopen|Connection|ECONN/i.test(msg)) {
+      fwShow('Сервер прошивок Betaflight не отвечает.<br>' +
+        'Проверь интернет на компьютере и попробуй ещё раз через минуту.<br>' +
+        '<span class="mono">' + escHtml(msg) + '</span>', 'bad');
+    } else {
+      fwShow('Не смог получить список: ' + escHtml(msg), 'bad');
+    }
     toast('Нет списка прошивок', 'err');
   } finally {
     btn.disabled = false;

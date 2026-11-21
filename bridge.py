@@ -58,7 +58,10 @@ def find_fc_ports():
     # Нужно для редких случаев, когда порт называется нестандартно.
     forced = os.environ.get("MOBULA6_PORT", "").strip()
     if forced:
-        found.append(forced)
+        # Если порт исчез (дрон отключили), не надо тащить его дальше —
+        # иначе вместо «дрон не найден» будет техническая ошибка про файл.
+        if forced.upper().startswith("COM") or os.path.exists(forced):
+            found.append(forced)
     for p in list_ports.comports():
         dev = p.device or ""
         if not dev:
@@ -624,7 +627,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(body)
 
@@ -638,6 +640,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return {}
 
     # ---------- GET ----------
+    def end_headers(self):
+        # Страница меняется при обновлении приложения, поэтому браузер
+        # не должен держать её в кэше: иначе он показывает старую версию
+        # и «не видит» исправлений.
+        self.send_header("Cache-Control", "no-store, must-revalidate")
+        super().end_headers()
+
     def do_GET(self):
         if self.path.startswith("/api/ping"):
             with _lock:
@@ -798,11 +807,58 @@ class Server(socketserver.ThreadingTCPServer):
     daemon_threads = True
 
 
+def find_running_bridge(start, count=60):
+    """Уже запущенный помощник на одном из портов start..start+count.
+
+    Два помощника на одном компьютере — плохо: они делят USB-порт дрона,
+    ответы MSP достаются то одному, то другому, и приложение решает,
+    что дрона нет. Поэтому второй экземпляр не запускается, а открывает
+    уже работающий.
+    """
+    import urllib.request
+    for port in range(start, start + count):
+        try:
+            with urllib.request.urlopen(
+                    f"http://127.0.0.1:{port}/api/ping", timeout=0.35) as r:
+                data = json.loads(r.read().decode("utf-8", "replace"))
+            if isinstance(data, dict) and data.get("bridge"):
+                return port, data
+        except Exception:
+            continue
+    return None, None
+
+
 def main():
     args = [a for a in sys.argv[1:]]
     open_browser = "--open" in args
     args = [a for a in args if not a.startswith("-")]
     start = int(args[0]) if args else 8000
+
+    # Уже есть работающий помощник? Тогда второй не нужен: он только
+    # помешает, забрав себе часть ответов дрона.
+    old_port, old_info = find_running_bridge(start)
+    if old_port:
+        try:
+            with open(os.path.join(HERE, "port.txt"), "w", encoding="utf-8") as f:
+                f.write(str(old_port))
+        except Exception:
+            pass
+        print("=" * 46)
+        print(f"  Помощник уже запущен: http://localhost:{old_port}/index.html")
+        print("=" * 46)
+        print()
+        print("Второй раз запускать не нужно — открой страницу по адресу выше.")
+        print("Если что-то не работает, закрой то окно консоли и запусти снова.")
+        print()
+        sys.stdout.flush()
+        if open_browser:
+            try:
+                import webbrowser
+                webbrowser.open(f"http://localhost:{old_port}/index.html")
+            except Exception:
+                pass
+        return
+
     httpd = None
     port = start
     for _ in range(60):
