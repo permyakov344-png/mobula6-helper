@@ -10,5 +10,9 @@ __pycache__/
 # Собранные архивы для релиза
 dist/
 
+# Собранный APK (пересобирается: python3 tools/build-apk.py)
+MobulaHelper.apk
+MobulaHelper.apk.idsig
+
 # Промежуточные файлы сборки APK
 android/build/
