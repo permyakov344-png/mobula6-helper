@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mobula6 — помощник</title>
+<style>
+  :root{
+    --bg:#0d1020; --card:#171c33; --card2:#202742; --line:#2b3358;
+    --txt:#eef1ff; --dim:#98a2c9;
+    --ok:#22c55e; --bad:#ef4444; --warn:#f59e0b; --acc:#5b6bff;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  body{
+    margin:0; padding:18px 14px 70px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:radial-gradient(1100px 520px at 50% -180px,#252c52 0%,var(--bg) 62%);
+    color:var(--txt);
+  }
+  .wrap{max-width:660px;margin:0 auto}
+  h1{font-size:27px;margin:4px 0 4px;letter-spacing:-.6px}
+  .sub{color:var(--dim);font-size:14px;margin-bottom:18px;line-height:1.45}
+
+  .card{
+    background:var(--card); border:1px solid var(--line);
+    border-radius:20px; padding:16px 16px 18px; margin-bottom:13px;
+  }
+  .card h2{
+    font-size:16px; margin:0 0 12px; display:flex; align-items:center; gap:8px;
+    font-weight:800; letter-spacing:-.2px;
+  }
+  .card h2 .ico{font-size:19px}
+
+  /* ---- connect ---- */
+  .conn{display:flex;align-items:center;gap:14px}
+  .dot{
+    width:54px;height:54px;border-radius:50%;flex:none;display:grid;place-items:center;
+    font-size:24px;background:#2a3154;transition:.25s;
+  }
+  .dot.on{background:rgba(34,197,94,.16);box-shadow:0 0 0 7px rgba(34,197,94,.07)}
+  .dot.off{background:rgba(239,68,68,.14);box-shadow:0 0 0 7px rgba(239,68,68,.05)}
+  .dot.wait{background:rgba(245,158,11,.14);box-shadow:0 0 0 7px rgba(245,158,11,.05)}
+  .conn .txt b{display:block;font-size:17px;margin-bottom:2px}
+  .conn .txt span{color:var(--dim);font-size:13px;line-height:1.4}
+
+  button{
+    font:inherit;font-weight:800;border:0;border-radius:14px;padding:14px 16px;
+    cursor:pointer;background:var(--acc);color:#fff;width:100%;
+    transition:filter .15s, transform .08s; font-size:15px;
+  }
+  button:hover:not(:disabled){filter:brightness(1.13)}
+  button:active:not(:disabled){transform:scale(.985)}
+  button:disabled{opacity:.42;cursor:not-allowed}
+  button.ghost{background:var(--card2);border:1px solid var(--line);color:var(--txt)}
+  button.big{background:linear-gradient(180deg,#ff8a3d,#f2621c);font-size:17px;padding:17px}
+  button.ok{background:linear-gradient(180deg,#2ad06a,#17a34a)}
+  button.mt{margin-top:11px}
+  .row{display:flex;gap:10px}
+  .row>*{flex:1}
+
+  /* ---- info table ---- */
+  .info{display:grid;grid-template-columns:1fr auto;gap:7px 12px;font-size:14px}
+  .info .k{color:var(--dim)}
+  .info .v{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+
+  .pill{
+    display:inline-flex;align-items:center;gap:6px;border-radius:999px;
+    padding:5px 11px;font-size:12.5px;font-weight:700;margin:3px 5px 3px 0;
+    background:rgba(239,68,68,.14);color:#ff9d9d;border:1px solid rgba(239,68,68,.28);
+  }
+  .pill.good{background:rgba(34,197,94,.14);color:#8ff0b0;border-color:rgba(34,197,94,.3)}
+  .pill.warn{background:rgba(245,158,11,.14);color:#ffd08a;border-color:rgba(245,158,11,.3)}
+
+  /* ---- steps ---- */
+  ol.steps{margin:10px 0 0;padding-left:22px;color:var(--dim);font-size:13.5px;line-height:1.85}
+  ol.steps b{color:var(--txt)}
+
+  /* ---- presets ---- */
+  .presets{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+  .preset{
+    background:var(--card2);border:1.5px solid var(--line);border-radius:14px;
+    padding:12px 10px;cursor:pointer;text-align:center;transition:.15s;font-size:13.5px;
+  }
+  .preset:hover{border-color:#4a5488}
+  .preset.active{border-color:var(--acc);background:rgba(91,107,255,.16)}
+  .preset b{display:block;font-size:14px;margin-bottom:3px}
+  .preset span{color:var(--dim);font-size:11.5px;line-height:1.3;display:block}
+
+  /* ---- sliders ---- */
+  .sl{margin:0 0 15px}
+  .sl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+  .sl-name{font-size:14px;font-weight:700}
+  .sl-val{
+    font-size:14px;font-weight:800;color:var(--acc);
+    font-variant-numeric:tabular-nums;background:rgba(91,107,255,.13);
+    padding:2px 9px;border-radius:8px;
+  }
+  .sl-hint{color:var(--dim);font-size:12px;margin-bottom:7px;line-height:1.35}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;margin:0;
+  }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:9px;border-radius:99px;background:var(--card2);border:1px solid var(--line);
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+    background:#fff;border:4px solid var(--acc);margin-top:-9px;cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,0,0,.4);
+  }
+  input[type=range]:disabled::-webkit-slider-thumb{border-color:#4c5578;background:#8b93b5}
+
+  .tabs{display:flex;gap:7px;margin-bottom:14px;background:var(--card2);padding:5px;border-radius:13px}
+  .tab{
+    flex:1;text-align:center;padding:9px 4px;border-radius:10px;font-size:13.5px;
+    font-weight:700;cursor:pointer;color:var(--dim);transition:.15s;
+  }
+  .tab.active{background:var(--acc);color:#fff}
+
+  /* ---- видео ---- */
+  .vlabel{
+    font-size:12px;font-weight:800;color:var(--dim);letter-spacing:.4px;
+    margin:15px 0 7px;text-transform:uppercase;
+  }
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{
+    padding:8px 12px;border-radius:11px;background:var(--card2);
+    border:1.5px solid var(--line);font-size:13.5px;font-weight:700;
+    cursor:pointer;transition:.13s;line-height:1.2;text-align:center;
+    font-variant-numeric:tabular-nums;
+  }
+  .chip small{display:block;font-size:10.5px;color:var(--dim);font-weight:600;margin-top:2px}
+  .chip:hover:not(.off){border-color:#4a5488}
+  .chip.active{border-color:var(--acc);background:rgba(91,107,255,.16)}
+  .chip.off{opacity:.28;cursor:not-allowed}
+
+  /* ---- прошивка ---- */
+  .fw-item{
+    display:flex;align-items:center;gap:10px;background:var(--card2);
+    border:1.5px solid var(--line);border-radius:13px;padding:11px 13px;
+    margin-bottom:7px;cursor:pointer;transition:.13s;font-size:13.5px;
+  }
+  .fw-item:hover{border-color:#4a5488}
+  .fw-item.active{border-color:var(--acc);background:rgba(91,107,255,.16)}
+  .fw-item .n{font-weight:800}
+  .fw-item .d{color:var(--dim);font-size:11.5px;margin-top:2px}
+  .fw-item .tag{
+    margin-left:auto;font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:7px;
+    background:rgba(34,197,94,.15);color:#8ff0b0;white-space:nowrap;
+  }
+  .fw-item .tag.beta{background:rgba(245,158,11,.15);color:#ffd08a}
+  .fw-item .tag.now{background:rgba(91,107,255,.18);color:#b9c2ff}
+  .fw-dump{
+    background:#12162a;border:1px solid var(--line);border-radius:12px;
+    padding:11px 12px;max-height:230px;overflow:auto;white-space:pre;
+    color:#b9c2ff;line-height:1.5;
+  }
+
+  .toast{
+    position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(140%);
+    background:#262e50;border:1px solid #3d4877;color:var(--txt);
+    padding:13px 20px;border-radius:14px;font-size:14px;font-weight:700;
+    box-shadow:0 14px 40px rgba(0,0,0,.5);transition:transform .3s;z-index:99;
+    max-width:90vw;text-align:center;
+  }
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  .toast.err{background:#4a1f24;border-color:#7a3238}
+  .toast.good{background:#14432a;border-color:#1e6b41}
+
+  .warnbox{
+    background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);
+    border-radius:13px;padding:12px 14px;font-size:13px;line-height:1.5;color:#ffd08a;
+    margin-top:13px;
+  }
+  .hide{display:none !important}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>🐝 Mobula6</h1>
+  <div class="sub">Помощник для настройки дрона. Подключи дрон по USB кабелем — и всё будет видно.</div>
+
+  <!-- ПОДКЛЮЧЕНИЕ -->
+  <div class="card">
+    <h2><span class="ico">🔌</span> Дрон подключён?</h2>
+    <div class="conn">
+      <div class="dot off" id="dot">⚪</div>
+      <div class="txt">
+        <b id="connTitle">Не подключён</b>
+        <span id="connSub">Вставь USB кабель и нажми кнопку ниже</span>
+      </div>
+    </div>
+    <button id="btnConnect" class="mt">Подключить дрон</button>
+    <div class="warnbox hide" id="serialWarn">
+      Этот браузер не умеет работать с USB. Открой страницу в <b>Google Chrome</b>, <b>Microsoft Edge</b> или <b>Яндекс Браузере</b> на компьютере. Safari и Firefox не подойдут.
+    </div>
+    <div class="warnbox hide" id="chromeWarn">
+      Страница открыта как файл, поэтому браузер не даст доступ к USB. Запусти <b>start.command</b> двойным кликом — он поднимет сервер и откроет правильный адрес сам.
+    </div>
+  </div>
+
+  <!-- ИНФО -->
+  <div class="card hide" id="cardInfo">
+    <h2><span class="ico">📋</span> Что за дрон</h2>
+    <div class="info">
+      <div class="k">Прошивка</div><div class="v" id="iFw">—</div>
+      <div class="k">Плата</div><div class="v" id="iBoard">—</div>
+      <div class="k">Гироскоп</div><div class="v" id="iGyro">—</div>
+      <div class="k">Приёмник</div><div class="v" id="iRx">—</div>
+      <div class="k">Батарея</div><div class="v" id="iVbat">—</div>
+    </div>
+    <div style="margin-top:13px" id="armBox"></div>
+  </div>
+
+  <!-- БИНД -->
+  <div class="card hide" id="cardBind">
+    <h2><span class="ico">📡</span> Связать с пультом (биндинг)</h2>
+    <div id="bindState" style="margin-bottom:12px"></div>
+
+    <div id="bindSteps">
+      <ol class="steps">
+        <li>Вставь <b>аккумулятор</b> в дрон (USB можно не вынимать)</li>
+        <li>На пульте: <b>SYS</b> → <b>Tools</b> → <b>ExpressLRS</b></li>
+        <li>Нажми <b>Bind</b></li>
+        <li>Жди — лампочка дрона перестанет мигать</li>
+      </ol>
+    </div>
+
+    <button id="btnBind" class="big mt">🔗 Включить режим бинда</button>
+    <div class="warnbox hide" id="bindWarn"></div>
+  </div>
+
+  <!-- НАСТРОЙКИ -->
+  <div class="card hide" id="cardTune">
+    <h2><span class="ico">🎛️</span> Как дрон летает</h2>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="feel">Сложность</div>
+      <div class="tab" data-tab="pid">Пиды</div>
+    </div>
+
+    <!-- вкладка: сложность -->
+    <div id="tab-feel">
+      <div class="presets" id="presetGrid"></div>
+      <div id="feelSliders"></div>
+      <button id="btnApplyFeel" class="ok">Сохранить и применить</button>
+      <div class="warnbox" style="margin-top:13px">
+        Меняй по чуть-чуть. Стало хуже — верни назад. Ничего не сломается, дрон просто будет летать иначе.
+      </div>
+    </div>
+
+    <!-- вкладка: пиды -->
+    <div id="tab-pid" class="hide">
+      <div class="sl-hint" style="margin-bottom:14px">
+        Пиды — это «мозги» дрона. Они держат его ровно. Меняй только если дрон дрожит или плохо держит угол.
+      </div>
+      <div id="pidSliders"></div>
+      <button id="btnApplyPid" class="ok">Сохранить и применить</button>
+      <div class="row mt">
+        <button id="btnPidPreset" class="ghost">Заводские пиды</button>
+        <button id="btnPidReload" class="ghost">Прочитать с дрона</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ВИДЕО -->
+  <div class="card hide" id="cardVideo">
+    <h2><span class="ico">📺</span> Видео (канал и мощность)</h2>
+
+    <div class="info" id="vtxInfo">
+      <div class="k">Канал</div><div class="v" id="vChannel">—</div>
+      <div class="k">Частота</div><div class="v" id="vFreq">—</div>
+      <div class="k">Мощность</div><div class="v" id="vPower">—</div>
+      <div class="k">Пит-мод</div><div class="v" id="vPit">—</div>
+    </div>
+
+    <div class="warnbox hide" id="vtxWarn"></div>
+
+    <div id="vtxEditor" class="hide">
+      <div class="vlabel">Канал</div>
+      <div class="chips" id="bandChips"></div>
+      <div class="chips" id="chanChips" style="margin-top:8px"></div>
+
+      <div class="vlabel">Мощность</div>
+      <div class="chips" id="powerChips"></div>
+
+      <button id="btnApplyVtx" class="ok mt">Сохранить и применить</button>
+      <div class="row mt">
+        <button id="btnVtxReload" class="ghost">Прочитать с дрона</button>
+        <button id="btnVtxPit" class="ghost">Пит-мод</button>
+      </div>
+      <div class="warnbox">
+        Канал и пит-мод меняются только на <b>разоружённом</b> дроне. На столе мощность и так минимальная —
+        так задумано, чтобы передатчик не перегрелся. Двум дронам — два разных канала.
+      </div>
+    </div>
+  </div>
+
+  <!-- ПРОШИВКА -->
+  <div class="card hide" id="cardFw">
+    <h2><span class="ico">💾</span> Прошивка</h2>
+
+    <div class="info">
+      <div class="k">Сейчас на дроне</div><div class="v" id="fwNow">—</div>
+      <div class="k">Плата</div><div class="v" id="fwBoard">—</div>
+      <div class="k">Прошивальщик</div><div class="v" id="fwTool">—</div>
+    </div>
+
+    <div class="row mt">
+      <button id="btnFwDump" class="ghost">Скопировать с дрона</button>
+      <button id="btnFwFind" class="ghost">Найти новые прошивки</button>
+    </div>
+
+    <div id="fwListBox" class="hide">
+      <div class="vlabel">Что можно поставить</div>
+      <div id="fwList"></div>
+    </div>
+
+    <div id="fwSaveBox" class="hide">
+      <div class="row mt">
+        <button id="btnFwSave" class="ghost">Сохранить прошивку</button>
+        <button id="btnFwFlash" class="big">Прошить дрон</button>
+      </div>
+    </div>
+
+    <div class="warnbox hide" id="fwWarn"></div>
+
+    <div id="fwDumpBox" class="hide">
+      <div class="vlabel">Настройки дрона</div>
+      <div class="mono fw-dump" id="fwDumpText"></div>
+      <div class="row mt">
+        <button id="btnFwCopy" class="ghost">Скопировать текст</button>
+      </div>
+    </div>
+
+    <div class="warnbox">
+      Прошивка <b>стирает настройки</b>. Поэтому сначала «Скопировать с дрона» — настройки
+      сохранятся в файл в папке <b>backups</b>. После прошивки их можно будет вернуть.
+    </div>
+  </div>
+
+  <button id="btnDisconnect" class="ghost hide mt">Отключить</button>
+
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+/* ============================================================
+   Mobula6 Helper — MSP over Web Serial
+   Проверено по исходникам Betaflight 2026.6.2
+   ============================================================ */
+
+// ---------- MSP ----------
+const MSP = {
+  API_VERSION: 1, FC_VARIANT: 2, FC_VERSION: 3, BOARD_INFO: 4,
+  STATUS: 101, STATUS_EX: 150, ANALOG: 110,
+  PID: 112, SET_PID: 202,
+  RC_TUNING: 111, SET_RC_TUNING: 204,
+  EEPROM_WRITE: 250,
+  RX_CONFIG: 44,
+  VTX_CONFIG: 88, SET_VTX_CONFIG: 89,
+  VTXTABLE_BAND: 137, VTXTABLE_POWERLEVEL: 138
+};
+const MSP2_BIND = 0x3000;
+
+// индексы PID: ROLL=0, PITCH=1, YAW=2, LEVEL=3, MAG=4
+const PID_ROLL = 0, PID_PITCH = 1, PID_YAW = 2;
+
+// CRC8-DVB-S2, полином 0xD5 — как в src/main/common/crc.h (betaflight 2026.6.2)
+function crc8(data){
+  let crc = 0;
+  for (let i = 0; i < data.length; i++){
+    crc ^= data[i];
+    for (let b = 0; b < 8; b++) crc = (crc & 0x80) ? ((crc << 1) ^ 0xD5) & 0xFF : (crc << 1) & 0xFF;
+  }
+  return crc;
+}
+
+function frameV1(cmd, payload = new Uint8Array(0)){
+  const buf = new Uint8Array(6 + payload.length);
+  buf[0] = 0x24; buf[1] = 0x4D; buf[2] = 0x3C;
+  buf[3] = payload.length; buf[4] = cmd;
+  buf.set(payload, 5);
+  let chk = 0;
+  for (let i = 3; i < 5 + payload.length; i++) chk ^= buf[i];
+  buf[5 + payload.length] = chk;
+  return buf;
+}
+
+function frameV2(cmd, payload = new Uint8Array(0)){
+  // $ X < | flags(1) cmd(2) size(2) | payload | crc(1)
+  const body = new Uint8Array(5 + payload.length);
+  body[0] = 0x00;
+  body[1] = cmd & 0xFF; body[2] = (cmd >> 8) & 0xFF;
+  body[3] = payload.length & 0xFF; body[4] = (payload.length >> 8) & 0xFF;
+  body.set(payload, 5);
+  const buf = new Uint8Array(9 + payload.length);
+  buf[0] = 0x24; buf[1] = 0x58; buf[2] = 0x3C;
+  buf.set(body, 3);
+  buf[8 + payload.length] = crc8(body);
+  return buf;
+}
+
+// ---------- Состояние ----------
+const S = {
+  port: null, reader: null, writer: null,
+  connected: false, busy: false,
+  buf: new Uint8Array(0),
+  pending: null,          // {cmd, resolve, reject, timer}
+  board: null,
+  pid: null,              // {roll:[P,I,D], pitch:[...], yaw:[...]}
+  pidRaw: null,           // исходные 15 байт MSP_PID (включая LEVEL и MAG)
+  rates: null,            // разобранные рейты
+  ratesRaw: null,
+  ratesType: null,
+  writing: false,
+  statusBusy: false,
+  lastStatus: null,
+  feel: null,             // текущие значения вкладки «Сложность»
+  preset: 'normal',
+  apiVersion: '',
+  bindSupported: null,
+  version: { major: 0, minor: 0, patch: 0 },
+  transport: null,        // 'serial' | 'bridge'
+  bridgePort: null,       // имя порта, который открыл помощник
+  vtx: null,              // {type, band, channel, power, pit, freq, ready, lowPower, pitFreq, bands, chans, levels}
+  vtxBands: null,         // [{num, name, letter, factory, freqs:[...]}]
+  vtxLevels: null,        // [{num, value, label}]
+  target: null,           // имя платы для сервера прошивок, например CRAZYBEEF4SX1280
+  fwList: null,           // [{release, type, date, unstable}]
+  fwSel: null,            // выбранная версия прошивки
+  fwPath: null,           // путь к скачанному .hex
+  dumpText: null          // прочитанные настройки дрона (CLI dump)
+};
+S.vtxSel = null;          // выбранное в интерфейсе: {band, channel, power}
+
+// ---------- DOM ----------
+const $ = id => document.getElementById(id);
+const dot = $('dot');
+
+function toast(msg, kind = '') {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + kind;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.className = 'toast ' + kind, 2600);
+}
+
+function setConn(connected, title, sub) {
+  S.connected = connected;
+  dot.className = 'dot ' + (connected ? 'on' : 'off');
+  dot.textContent = connected ? '🟢' : '⚪';
+  $('connTitle').textContent = title;
+  $('connSub').textContent = sub;
+  $('btnConnect').textContent = connected ? 'Подключить заново' : 'Подключить дрон';
+  ['cardInfo', 'cardBind', 'cardTune', 'cardVideo', 'cardFw', 'btnDisconnect'].forEach(id => {
+    $(id).classList.toggle('hide', !connected);
+  });
+}
+
+// ---------- Порт ----------
+// Помощник bridge.py запущен? Тогда USB открывает он — окно выбора не нужно.
+async function bridgeAvailable() {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 1500);
+    const r = await fetch('/api/ping', { cache: 'no-store', signal: ctrl.signal });
+    clearTimeout(t);
+    if (!r.ok) return null;
+    const j = await r.json();
+    return (j && j.bridge) ? j : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+// Если порт уже разрешён раньше — берём его молча, без окна выбора.
+async function pickPort() {
+  if (S.port) return S.port;
+  try {
+    const known = await navigator.serial.getPorts();
+    if (known && known.length === 1) return known[0];
+    if (known && known.length > 1) {
+      const fc = known.find(p => {
+        const info = p.getInfo ? p.getInfo() : {};
+        return info.usbVendorId === 0x0483;
+      });
+      if (fc) return fc;
+    }
+  } catch (_) {}
+  return await navigator.serial.requestPort();
+}
+
+// Подключение через bridge.py: он сам находит дрон и открывает порт.
+async function openViaBridge() {
+  const r = await fetch('/api/connect', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({})
+  });
+  const j = await r.json();
+  if (!j || !j.ok) throw new Error((j && j.error) || 'Помощник не смог открыть дрон');
+  S.transport = 'bridge';
+  S.bridgePort = j.port;
+  S.connected = true;
+}
+
+async function openPort() {
+  if (location.protocol === 'file:') {
+    $('chromeWarn').classList.remove('hide');
+    toast('Запусти start.command двойным кликом', 'err');
+    return;
+  }
+
+  const bridge = await bridgeAvailable();
+
+  // ---- путь 1: локальный помощник (без окна выбора порта) ----
+  if (bridge) {
+    dot.className = 'dot wait';
+    dot.textContent = '🟡';
+    $('connTitle').textContent = 'Подключаюсь…';
+    $('connSub').textContent = 'Ищу дрон на USB';
+    try {
+      await openViaBridge();
+      const api = await msp(MSP.API_VERSION, null, 2500);
+      if (!api) throw new Error('Дрон не отвечает');
+      S.apiVersion = `${api.data[1]}.${api.data[2]}`;
+
+      await readInfo();
+      await readTuning();
+      await readVideo();
+      await readStatus();
+
+      setConn(true, 'Дрон подключён', 'Связь есть. Всё готово.');
+      toast('Дрон на связи!', 'good');
+      refreshFwInfo();
+      return;
+    } catch (e) {
+      console.error(e);
+      setConn(false, 'Не получилось подключиться', e.message || 'Попробуй ещё раз');
+      toast('Не подключился: ' + (e.message || e), 'err');
+      try { await closePort(); } catch (_) {}
+      return;
+    }
+  }
+
+  // ---- путь 2: Web Serial напрямую из браузера ----
+  if (!('serial' in navigator)) {
+    $('serialWarn').classList.remove('hide');
+    return;
+  }
+  $('serialWarn').classList.add('hide');
+  try {
+    S.port = await pickPort();
+  } catch (e) {
+    if (e && (e.name === 'NotFoundError' || /No port selected/i.test(e.message || ''))) {
+      setConn(false, 'Порт не выбран', 'Нажми «Подключить дрон» и выбери порт дрона в списке.');
+      toast('Порт не выбран', 'err');
+      return;
+    }
+    console.error(e);
+    setConn(false, 'Не получилось подключиться', e.message || 'Попробуй ещё раз');
+    toast('Не подключился: ' + (e.message || e), 'err');
+    return;
+  }
+
+  try {
+    await S.port.open({ baudRate: 115200, bufferSize: 8192 });
+    S.transport = 'serial';
+    S.writer = S.port.writable.getWriter();
+    S.buf = new Uint8Array(0);
+    S.connected = true;
+    readLoop();
+
+    dot.className = 'dot wait';
+    dot.textContent = '🟡';
+    $('connTitle').textContent = 'Проверяю связь…';
+    $('connSub').textContent = 'Одну секунду';
+
+    const api = await msp(MSP.API_VERSION, null, 2500);
+    if (!api) throw new Error('Дрон не отвечает');
+    S.apiVersion = `${api.data[1]}.${api.data[2]}`;
+
+    await readInfo();
+    await readTuning();
+    await readVideo();
+    await readStatus();
+
+    setConn(true, 'Дрон подключён', 'Связь есть. Всё готово.');
+    toast('Дрон на связи!', 'good');
+    refreshFwInfo();
+  } catch (e) {
+    console.error(e);
+    setConn(false, 'Не получилось подключиться', e.message || 'Попробуй ещё раз');
+    toast('Не подключился: ' + (e.message || e), 'err');
+    try { await closePort(); } catch (_) {}
+  }
+}
+
+async function closePort() {
+  if (S.transport === 'bridge') {
+    try { await fetch('/api/disconnect', { method: 'POST' }); } catch (_) {}
+  }
+  try { if (S.reader) { await S.reader.cancel(); S.reader = null; } } catch (_) {}
+  try { if (S.writer) { S.writer.releaseLock(); S.writer = null; } } catch (_) {}
+  try { if (S.port) { await S.port.close(); } } catch (_) {}
+  S.port = null;
+  S.transport = null;
+  S.bridgePort = null;
+}
+
+// ---------- Чтение ----------
+async function readLoop() {
+  S.reader = S.port.readable.getReader();
+  try {
+    while (true) {
+      const { value, done } = await S.reader.read();
+      if (done) break;
+      if (value) { pushBytes(value); parseBuffer(); }
+    }
+  } catch (e) {
+    // порт закрыт — нормально
+  } finally {
+    try { S.reader.releaseLock(); } catch (_) {}
+  }
+}
+
+function pushBytes(chunk) {
+  const out = new Uint8Array(S.buf.length + chunk.length);
+  out.set(S.buf, 0); out.set(chunk, S.buf.length);
+  S.buf = out;
+}
+
+function parseBuffer() {
+  while (S.buf.length >= 3) {
+    if (S.buf[0] !== 0x24) { S.buf = S.buf.subarray(1); continue; }
+    const kind = S.buf[1];
+    if (kind === 0x4D) { // MSP v1: $ M < / ! | size cmd payload crc
+      if (S.buf.length < 6) return;
+      const isErr = S.buf[2] === 0x21;
+      const size = S.buf[3], cmd = S.buf[4];
+      if (size > 250) { S.buf = S.buf.subarray(1); continue; }
+      if (S.buf.length < 6 + size) return;
+      const data = S.buf.slice(5, 5 + size);
+      S.buf = S.buf.subarray(6 + size);
+      resolvePending(cmd, data, isErr);
+    } else if (kind === 0x58) { // MSP v2: $ X < / ! | flags cmd16 size16 payload crc
+      if (S.buf.length < 9) return;
+      const isErr = S.buf[2] === 0x21;
+      const cmd = S.buf[4] | (S.buf[5] << 8);
+      const size = S.buf[6] | (S.buf[7] << 8);
+      if (S.buf.length < 9 + size) return;
+      const data = S.buf.slice(8, 8 + size);
+      S.buf = S.buf.subarray(9 + size);
+      resolvePending(cmd, data, isErr);
+    } else if (kind === 0x21) { // '$!' без префикса
+      S.buf = S.buf.subarray(5);
+    } else {
+      S.buf = S.buf.subarray(1);
+    }
+  }
+}
+
+function resolvePending(cmd, data, isErr) {
+  if (S.pending && S.pending.cmd === cmd) {
+    clearTimeout(S.pending.timer);
+    const p = S.pending; S.pending = null;
+    if (isErr) p.resolve(null); else p.resolve({ cmd, data });
+  }
+}
+
+// ---------- Запрос ----------
+// Разбор всех MSP-пакетов из сырых байтов (для режима через bridge.py)
+function parseFrames(bytes) {
+  const out = [];
+  let i = 0;
+  while (i + 3 <= bytes.length) {
+    if (bytes[i] !== 0x24) { i++; continue; }
+    const kind = bytes[i + 1];
+    if (kind === 0x4D) {                       // $M< size cmd payload crc
+      if (i + 6 > bytes.length) break;
+      const size = bytes[i + 3], cmd = bytes[i + 4];
+      if (size > 250) { i++; continue; }
+      if (i + 6 + size > bytes.length) break;
+      out.push({ cmd, data: bytes.slice(i + 5, i + 5 + size), err: bytes[i + 2] === 0x21 });
+      i += 6 + size;
+    } else if (kind === 0x58) {                // $X< flags cmd16 size16 payload crc
+      if (i + 9 > bytes.length) break;
+      const cmd = bytes[i + 4] | (bytes[i + 5] << 8);
+      const size = bytes[i + 6] | (bytes[i + 7] << 8);
+      if (i + 9 + size > bytes.length) break;
+      out.push({ cmd, data: bytes.slice(i + 8, i + 8 + size), err: bytes[i + 2] === 0x21 });
+      i += 9 + size;
+    } else {
+      i++;
+    }
+  }
+  return out;
+}
+
+function toHex(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i++) s += bytes[i].toString(16).padStart(2, '0');
+  return s;
+}
+
+function fromHex(hex) {
+  const out = new Uint8Array(hex.length >> 1);
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.substr(i * 2, 2), 16);
+  return out;
+}
+
+async function mspBridge(cmd, payload, timeout) {
+  const frame = payload
+    ? (cmd > 255 ? frameV2(cmd, payload) : frameV1(cmd, payload))
+    : (cmd > 255 ? frameV2(cmd) : frameV1(cmd));
+
+  const ctrl = new AbortController();
+  const killer = setTimeout(() => ctrl.abort(), timeout + 1200);
+  try {
+    const r = await fetch('/api/msp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        frame: toHex(frame),
+        timeout: timeout,
+        port: S.bridgePort || undefined
+      }),
+      signal: ctrl.signal
+    });
+    if (!r.ok) return null;
+    const j = await r.json();
+    if (!j || !j.ok || !j.reply) return null;
+    const frames = parseFrames(fromHex(j.reply));
+    const hit = frames.find(f => f.cmd === (cmd & 0xFFFF));
+    if (!hit || hit.err) return null;
+    return { cmd: hit.cmd, data: hit.data };
+  } catch (_) {
+    return null;
+  } finally {
+    clearTimeout(killer);
+  }
+}
+
+function msp(cmd, payload = null, timeout = 1500) {
+  // режим через локальный помощник — без окна выбора порта
+  if (S.transport === 'bridge') return mspBridge(cmd, payload, timeout);
+
+  return new Promise((resolve) => {
+    if (!S.writer) return resolve(null);
+    if (S.pending) {
+      clearTimeout(S.pending.timer);
+      const old = S.pending; S.pending = null;
+      old.resolve(null);
+    }
+    const timer = setTimeout(() => { S.pending = null; resolve(null); }, timeout);
+    S.pending = { cmd: cmd & 0xFFFF, resolve, timer };
+    const frame = payload
+      ? (cmd > 255 ? frameV2(cmd, payload) : frameV1(cmd, payload))
+      : (cmd > 255 ? frameV2(cmd) : frameV1(cmd));
+    S.writer.write(frame).catch(() => {});
+  });
+}
+</script>
+<script>
+/* ============ Чтение информации ============ */
+
+// Биты ARMING_DISABLED_* из src/main/fc/runtime_config.h (2026.6.2)
+const ARMING_FLAGS = [
+  [0,  'НЕТ ГИРОСКОПА'],
+  [1,  'FAILSAFE'],
+  [2,  'НЕТ СИГНАЛА С ПУЛЬТА'],
+  [3,  'ДРОН УЖЕ ВЗВЕДЁН'],
+  [4,  'FAILSAFE РЕЖИМА'],
+  [5,  'МОТОРЫ В РАЗГОНЕ'],
+  [6,  'ОБНАРУЖЕНО ПАДЕНИЕ'],
+  [7,  'ГАЗ НЕ В НУЛЕ'],
+  [8,  'ANGLE'],
+  [9,  'ИДЁТ ЗАГРУЗКА'],
+  [10, 'НЕТ PREARM'],
+  [11, 'ПЕРЕГРУЗКА'],
+  [12, 'КАЛИБРОВКА'],
+  [13, 'РЕЖИМ CLI'],
+  [14, 'МЕНЮ OSD'],
+  [15, 'BST'],
+  [16, 'НЕ ЗАКРЫТ MSP'],
+  [17, 'PARALYZE'],
+  [18, 'GPS'],
+  [19, 'RESC'],
+  [20, 'DSHOT ТЕЛЕМЕТРИЯ'],
+  [21, 'НУЖНА ПЕРЕЗАГРУЗКА'],
+  [22, 'DSHOT BITBANG'],
+  [23, 'КАЛИБРОВКА АКСЕЛЕРОМЕТРА'],
+  [24, 'ПРОТОКОЛ МОТОРОВ'],
+  [25, 'CRASHFLIP'],
+  [26, 'УДЕРЖАНИЕ ВЫСОТЫ'],
+  [27, 'УДЕРЖАНИЕ ПОЗИЦИИ'],
+  [28, 'АВТОПИЛОТ'],
+  [29, 'ТУМБЛЕР ARM']
+];
+
+// Флаги, которые нормальны при настройке на столе и НЕ мешают лёту
+const BENIGN = new Set([9, 13, 16, 20, 22, 23, 24, 25, 29]);
+
+function u16(b, o) { return b[o] | (b[o + 1] << 8); }
+function u32(b, o) { return (b[o] | (b[o+1] << 8) | (b[o+2] << 16) | (b[o+3] << 24)) >>> 0; }
+
+async function readInfo() {
+  // версия
+  const fv = await msp(MSP.FC_VERSION);
+  if (fv && fv.data.length >= 3) {
+    S.version = { major: 2000 + fv.data[0], minor: fv.data[1], patch: fv.data[2] };
+    $('iFw').textContent = `${S.version.major}.${S.version.minor}.${S.version.patch}`;
+  } else {
+    $('iFw').textContent = S.apiVersion ? 'API ' + S.apiVersion : '—';
+  }
+
+  // плата: id(4) hwRev(2) boardType(1) capabilities(1) targetName(pstr) boardName(pstr) manufacturer(pstr)
+  const bi = await msp(MSP.BOARD_INFO);
+  if (bi && bi.data.length >= 8) {
+    const d = bi.data;
+    const caps = d[7];
+    S.bindSupported = !!(caps & (1 << 6)); // TARGET_SUPPORTS_RX_BIND
+
+    let o = 8;
+    const pstr = () => {
+      if (o >= d.length) return '';
+      const len = d[o++];
+      const s = String.fromCharCode(...d.slice(o, o + len));
+      o += len;
+      return s;
+    };
+    const targetName = pstr();
+    const boardName = pstr();
+    const manufacturer = pstr();
+
+    S.board = boardName || targetName || '';
+    S.target = targetName || boardName || '';
+    $('iBoard').textContent = S.board || '—';
+
+    // кнопка бинда — только если прошивка это умеет
+    $('btnBind').disabled = !S.bindSupported;
+    if (!S.bindSupported) {
+      $('bindWarn').classList.remove('hide');
+      $('bindWarn').innerHTML = 'Эта прошивка не поддерживает бинд из приложения. Свяжи дрон с пультом обычным способом через ExpressLRS.';
+    } else {
+      $('bindWarn').classList.add('hide');
+    }
+  }
+}
+
+async function readStatus() {
+  if (S.statusBusy) return S.lastStatus || null;
+  S.statusBusy = true;
+  try {
+    return await readStatusInner();
+  } finally {
+    S.statusBusy = false;
+  }
+}
+
+async function readStatusInner() {
+  const st = await msp(MSP.STATUS_EX, null, 1200);
+  if (!st || st.data.length < 20) return null;
+
+  const d = st.data;
+  const sensors = u16(d, 4);
+  // флаги режимов полёта идут переменной длины — считаем смещение
+  const flagByteCount = d[15];
+  const armOffset = 17 + flagByteCount;
+  const flags = d.length >= armOffset + 4 ? u32(d, armOffset) : 0;
+
+  const gyro = (sensors >> 5) & 1;
+
+  $('iGyro').textContent = gyro ? 'работает ✅' : 'НЕ НАЙДЕН ❌';
+
+  const active = [];
+  for (const [bit, name] of ARMING_FLAGS) {
+    if (flags & (1 << bit)) active.push({ bit, name });
+  }
+
+  const noLink = active.some(a => a.bit === 2);
+  $('iRx').innerHTML = noLink
+    ? '<span style="color:#ff9d9d">нет связи — нужен бинд</span>'
+    : '<span style="color:#8ff0b0">на связи ✅</span>';
+
+  // батарея: MSP_ANALOG = 1 байт(0.1В), 2 mAh, 2 rssi, 2 ток, 2 напряжение(0.01В)
+  const an = await msp(MSP.ANALOG, null, 1200);
+  if (an && an.data.length >= 9) {
+    const volts = u16(an.data, 7) / 100;
+    if (volts > 1) {
+      const cells = Math.max(1, Math.round(volts / 4.2));
+      $('iVbat').textContent = `${volts.toFixed(2)} В (${cells}S)`;
+    } else {
+      $('iVbat').textContent = 'нет батареи';
+    }
+  }
+
+  // проблемы
+  const problems = active.filter(a => !BENIGN.has(a.bit));
+  const box = $('armBox');
+  if (problems.length === 0) {
+    box.innerHTML = '<span class="pill good">✅ Всё в порядке</span>';
+  } else {
+    box.innerHTML = problems.map(p => `<span class="pill">${p.name}</span>`).join('');
+  }
+
+  // состояние приёмника крупной плашкой в блоке бинда
+  const bs = $('bindState');
+  if (bs) {
+    bs.innerHTML = noLink
+      ? '<span class="pill warn">📡 Пульт не найден — нужен бинд</span>'
+      : '<span class="pill good">📡 Пульт найден — дрон связан</span>';
+  }
+
+  S.lastStatus = { noLink, flags, active };
+  return S.lastStatus;
+}
+
+/* ============ Биндинг ============ */
+
+async function doBind() {
+  const btn = $('btnBind');
+  btn.disabled = true;
+  btn.textContent = 'Включаю…';
+  $('bindWarn').classList.add('hide');
+
+  const res = await msp(MSP2_BIND, new Uint8Array(0), 3000);
+
+  if (!res) {
+    $('bindWarn').classList.remove('hide');
+    $('bindWarn').innerHTML = 'Дрон не ответил на команду бинда. Проверь, что кабель подключён, и попробуй снова.';
+    toast('Не получилось включить бинд', 'err');
+  } else {
+    $('bindState').innerHTML = '<span class="pill warn">📡 Режим бинда включён — жду пульт</span>';
+    toast('Дрон ищет пульт!', 'good');
+    setTimeout(readStatus, 1500);
+    setTimeout(readStatus, 4000);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🔗 Включить режим бинда';
+}
+</script>
+<script>
+/* ============ Настройки: рейты и пиды ============ */
+
+// Заводские значения профиля 0 (из бэкапа дрона)
+const FACTORY_PID = {
+  roll:  { p: 85,  i: 100, d: 85 },
+  pitch: { p: 80,  i: 100, d: 85 },
+  yaw:   { p: 120, i: 100, d: 0  }
+};
+
+// Пресеты «сложности». ACTUAL-рейты: center = rcRate*10 °/с, max = srate*10 °/с
+const PRESETS = {
+  calm:   { name: '🐣 Очень спокойно', hint: 'Для самого первого раза', dps: 300, center: 100, expo: 35 },
+  easy:   { name: '🙂 Спокойно',       hint: 'В комнате, аккуратно',    dps: 450, center: 120, expo: 20 },
+  normal: { name: '😎 Обычно',         hint: 'Как с завода',            dps: 670, center: 70,  expo: 0  },
+  fast:   { name: '🚀 Быстро',         hint: 'Для улицы',               dps: 900, center: 150, expo: 0  }
+};
+
+async function readTuning() {
+  // ---- PID ----
+  const pid = await msp(MSP.PID, null, 1500);
+  if (pid && pid.data.length >= 15) {
+    const g = i => ({
+      p: pid.data[i * 3], i: pid.data[i * 3 + 1], d: pid.data[i * 3 + 2]
+    });
+    S.pid = { roll: g(PID_ROLL), pitch: g(PID_PITCH), yaw: g(PID_YAW) };
+    // LEVEL и MAG не показываем, но обязаны вернуть их как было:
+    // PID_LEVEL.P/I/D — это усиление режима Angle/Horizon, нули его ломают
+    S.pidRaw = pid.data.slice(0, 15);
+    renderPidSliders();
+    updatePidAvailability();
+  }
+
+  // ---- RATES ----
+  const rc = await msp(MSP.RC_TUNING, null, 1500);
+  if (rc && rc.data.length >= 24) {
+    S.ratesRaw = rc.data.slice();
+    const ratesType = rc.data[22];
+    S.ratesType = ratesType;
+    // ACTUAL(3): srate*10 = макс °/с, rcRate*10 = центр °/с, expo в %
+    if (ratesType === 3) {
+      S.feel = {
+        dps: Math.round(rc.data[2] * 10),     // rates[ROLL]
+        center: Math.round(rc.data[0] * 10),  // rcRate[ROLL]
+        expo: rc.data[1]                     // rcExpo[ROLL]
+      };
+    } else {
+      // другой тип рейтов — те же байты означают другое, не трогаем
+      S.feel = null;
+      S.ratesRaw = null;
+    }
+    detectPreset();
+    renderFeelSliders();
+    updateFeelAvailability();
+  }
+}
+
+function detectPreset() {
+  const f = S.feel;
+  if (!f) return;
+  let best = 'normal', bestD = 1e9;
+  for (const [k, p] of Object.entries(PRESETS)) {
+    const d = Math.abs(p.dps - f.dps) + Math.abs(p.center - f.center) * 2 + Math.abs(p.expo - f.expo) * 3;
+    if (d < bestD) { bestD = d; best = k; }
+  }
+  S.preset = bestD <= 120 ? best : 'custom';
+  renderPresetGrid();
+}
+
+function renderPresetGrid() {
+  const grid = $('presetGrid');
+  grid.innerHTML = '';
+  for (const [key, p] of Object.entries(PRESETS)) {
+    const el = document.createElement('div');
+    el.className = 'preset' + (S.preset === key ? ' active' : '');
+    el.innerHTML = `<b>${p.name}</b><span>${p.hint}</span>`;
+    el.onclick = () => {
+      if (!S.feel) return;
+      S.preset = key;
+      S.feel.dps = p.dps;
+      S.feel.expo = p.expo;
+      S.feel.center = p.center;
+      renderPresetGrid();
+      renderFeelSliders();
+    };
+    grid.appendChild(el);
+  }
+}
+
+function renderFeelSliders() {
+  const box = $('feelSliders');
+  if (!S.feel) {
+    box.innerHTML = '<div class="sl-hint">На дроне другой тип рейтов — эта вкладка его не трогает, чтобы ничего не испортить.</div>';
+    return;
+  }
+  box.innerHTML = '';
+
+  box.appendChild(slider({
+    name: 'Как быстро вертится',
+    hint: 'Максимальная скорость поворота',
+    value: S.feel.dps, min: 150, max: 1200, step: 10, unit: '°/с',
+    onInput: v => { S.feel.dps = v; detectPreset(); }
+  }));
+
+  box.appendChild(slider({
+    name: 'Резкость стика',
+    hint: 'Меньше — плавнее и мягче',
+    value: S.feel.center, min: 10, max: 250, step: 10, unit: '°/с',
+    onInput: v => { S.feel.center = v; detectPreset(); }
+  }));
+
+  box.appendChild(slider({
+    name: 'Мягкость в центре',
+    hint: 'Больше — прощает резкие движения',
+    value: S.feel.expo, min: 0, max: 80, step: 1, unit: '%',
+    onInput: v => { S.feel.expo = v; detectPreset(); }
+  }));
+}
+
+function slider(o) {
+  const wrap = document.createElement('div');
+  wrap.className = 'sl';
+  wrap.innerHTML = `
+    <div class="sl-top">
+      <div class="sl-name">${o.name}</div>
+      <div class="sl-val">${o.value}${o.unit}</div>
+    </div>
+    <div class="sl-hint">${o.hint}</div>
+    <input type="range" min="${o.min}" max="${o.max}" step="${o.step}" value="${o.value}">
+  `;
+  const input = wrap.querySelector('input');
+  input.dataset.unit = o.unit;
+  input.oninput = () => {
+    wrap.querySelector('.sl-val').textContent = input.value + o.unit;
+    o.onInput(Number(input.value));
+  };
+  return wrap;
+}
+
+// ---- PID слайдеры ----
+function updatePidAvailability() {
+  const ok = !!S.pidRaw;
+  $('btnApplyPid').disabled = !ok;
+  $('btnPidPreset').disabled = !ok;
+}
+
+function renderPidSliders() {
+  const box = $('pidSliders');
+  if (!S.pid) { box.innerHTML = '<div class="sl-hint">Не удалось прочитать пиды.</div>'; return; }
+  box.innerHTML = '';
+
+  const axes = [
+    ['roll',  'Наклон вперёд-назад (Roll)'],
+    ['pitch', 'Наклон влево-вправо (Pitch)'],
+    ['yaw',   'Поворот (Yaw)']
+  ];
+  for (const [ax, label] of axes) {
+    const head = document.createElement('div');
+    head.style.cssText = 'font-weight:800;font-size:14.5px;margin:16px 0 2px';
+    head.textContent = label;
+    box.appendChild(head);
+
+    box.appendChild(slider({
+      name: 'P — сила', hint: 'Больше — держит жёстче',
+      value: S.pid[ax].p, min: 0, max: 250, step: 1, unit: '',
+      onInput: v => { S.pid[ax].p = v; }
+    }));
+    box.appendChild(slider({
+      name: 'I — память', hint: 'Больше — сильнее возвращает',
+      value: S.pid[ax].i, min: 0, max: 250, step: 1, unit: '',
+      onInput: v => { S.pid[ax].i = v; }
+    }));
+    box.appendChild(slider({
+      name: 'D — тормоз', hint: 'Больше — меньше раскачки',
+      value: S.pid[ax].d, min: 0, max: 250, step: 1, unit: '',
+      onInput: v => { S.pid[ax].d = v; }
+    }));
+  }
+}
+
+// ---- Применение ----
+function updateFeelAvailability() {
+  const ok = !!S.ratesRaw;
+  $('btnApplyFeel').disabled = !ok;
+  $('presetGrid').style.opacity = ok ? '1' : '.4';
+  $('presetGrid').style.pointerEvents = ok ? 'auto' : 'none';
+}
+
+async function applyFeel() {
+  if (!S.ratesRaw || !S.feel) { toast('Сначала прочитай настройки с дрона', 'err'); return; }
+  const b = S.ratesRaw.slice();
+  const srate = Math.max(1, Math.min(200, Math.round(S.feel.dps / 10)));
+  // центр не может быть больше максимума, иначе дрон ведёт себя странно
+  const rcRate = Math.max(1, Math.min(srate, Math.round(S.feel.center / 10)));
+  const expo = Math.max(0, Math.min(100, Math.round(S.feel.expo)));
+
+  b[0] = rcRate;              // rcRate ROLL
+  b[1] = expo;                // rcExpo ROLL
+  b[2] = srate;               // rates ROLL
+  b[3] = srate;               // rates PITCH
+  b[4] = srate;               // rates YAW
+  b[10] = expo;               // rcExpo YAW
+  b[11] = rcRate;             // rcRate YAW
+  b[12] = rcRate;             // rcRate PITCH
+  b[13] = expo;               // rcExpo PITCH
+
+  $('btnApplyFeel').disabled = true;
+  S.writing = true;
+  const ok = await msp(MSP.SET_RC_TUNING, b, 2000);
+  const saved = ok ? await msp(MSP.EEPROM_WRITE, null, 4000) : null;
+  S.writing = false;
+  $('btnApplyFeel').disabled = false;
+
+  if (ok && saved) {
+    toast('Сохранено! Дрон теперь летает так.', 'good');
+    await readTuning();
+  } else {
+    toast('Не сохранилось. Попробуй ещё раз.', 'err');
+  }
+}
+
+async function applyPid() {
+  if (!S.pid || !S.pidRaw) { toast('Сначала прочитай пиды с дрона', 'err'); return; }
+  // копия прочитанного: сохраняем LEVEL и MAG без изменений
+  const p = S.pidRaw.slice();
+  const put = (idx, g) => {
+    p[idx * 3] = g.p; p[idx * 3 + 1] = g.i; p[idx * 3 + 2] = g.d;
+  };
+  put(PID_ROLL, S.pid.roll);
+  put(PID_PITCH, S.pid.pitch);
+  put(PID_YAW, S.pid.yaw);
+
+  $('btnApplyPid').disabled = true;
+  S.writing = true;
+  const ok = await msp(MSP.SET_PID, p, 2000);
+  const saved = ok ? await msp(MSP.EEPROM_WRITE, null, 4000) : null;
+  S.writing = false;
+  $('btnApplyPid').disabled = false;
+
+  if (ok && saved) {
+    toast('Пиды сохранены!', 'good');
+    await readTuning();
+  } else {
+    toast('Не сохранилось. Попробуй ещё раз.', 'err');
+  }
+}
+</script>
+<script>
+/* ============ Видео (VTX) ============ */
+// Структура ответа MSP_VTX_CONFIG (88) сверена с src/main/msp/msp.c 2026.6.2:
+// u8 type, u8 band, u8 channel, u8 power, u8 pitMode, u16 freq, u8 ready,
+// u8 lowPowerDisarm, u16 pitModeFreq, u8 hasTable, u8 bands, u8 channels, u8 powerLevels
+
+const BAND_LETTER = { 1:'A', 2:'B', 3:'E', 4:'F', 5:'R', 6:'L' };
+const LOWPOWER_TEXT = ['выкл', 'всегда минимум', 'минимум до первого взвода'];
+const VTX_TYPE_TEXT = {
+  0:'нет устройства', 1:'RTC6705', 3:'SmartAudio', 4:'Tramp', 5:'MSP', 255:'неизвестно'
+};
+
+async function readVideo() {
+  S.vtxSel = null;
+  const box = $('vtxWarn');
+  box.classList.add('hide');
+
+  const r = await msp(MSP.VTX_CONFIG, null, 1500);
+  if (!r || r.data.length < 8) {
+    $('vChannel').textContent = '—';
+    $('vFreq').textContent = '—';
+    $('vPower').textContent = '—';
+    $('vPit').textContent = '—';
+    $('vtxEditor').classList.add('hide');
+    box.classList.remove('hide');
+    box.innerHTML = 'Не удалось прочитать настройки видео. На этом дроне передатчик может быть не подключён к прошивке.';
+    return;
+  }
+
+  const d = r.data;
+  const v = {
+    type: d[0], band: d[1], channel: d[2], power: d[3], pit: d[4],
+    freq: u16(d, 5), ready: d[7], lowPower: d[8] ?? 0,
+    pitFreq: d.length >= 11 ? u16(d, 9) : 0,
+    hasTable: d.length >= 12 ? d[11] : 0,
+    bands: d.length >= 13 ? d[12] : 0,
+    chans: d.length >= 14 ? d[13] : 0,
+    levels: d.length >= 15 ? d[14] : 0
+  };
+  S.vtx = v;
+
+  // таблица частот и уровней — только если прошивка её отдаёт
+  if (v.hasTable) {
+    if (!S.vtxBands) await loadVtxTable(v.bands);
+    if (!S.vtxLevels) await loadVtxPowers(v.levels);
+  }
+
+  renderVideo();
+}
+
+async function loadVtxTable(count) {
+  const bands = [];
+  for (let b = 1; b <= count; b++) {
+    const r = await msp(MSP.VTXTABLE_BAND, new Uint8Array([b]), 1200);
+    if (!r || r.data.length < 12) continue;
+    const d = r.data;
+    const nameLen = d[1];
+    let o = 2;
+    const name = String.fromCharCode(...d.slice(o, o + nameLen)).replace(/\0/g, '').trim();
+    o += nameLen;
+    const letter = String.fromCharCode(d[o++] || 0);
+    const factory = d[o++];
+    const chCount = d[o++];
+    const freqs = [];
+    for (let i = 0; i < chCount; i++) { freqs.push(u16(d, o)); o += 2; }
+    bands.push({ num: d[0], name, letter, factory, freqs });
+  }
+  S.vtxBands = bands.length ? bands : null;
+}
+
+async function loadVtxPowers(count) {
+  const levels = [];
+  for (let i = 1; i <= count; i++) {
+    const r = await msp(MSP.VTXTABLE_POWERLEVEL, new Uint8Array([i]), 1200);
+    if (!r || r.data.length < 5) continue;
+    const d = r.data;
+    const value = u16(d, 1);
+    const labelLen = d[3];
+    const label = String.fromCharCode(...d.slice(4, 4 + labelLen)).replace(/\0/g, '').trim();
+    levels.push({ num: d[0], value, label });
+  }
+  S.vtxLevels = levels.length ? levels : null;
+}
+
+function bandOf(num) {
+  if (!S.vtxBands) return null;
+  return S.vtxBands.find(b => b.num === num) || null;
+}
+
+function powerText(idx) {
+  if (!idx) return 'неизвестно';
+  const lv = S.vtxLevels && S.vtxLevels.find(l => l.num === idx);
+  if (!lv) return 'уровень ' + idx;
+  const label = lv.label && lv.label !== '---' ? lv.label : '—';
+  return `уровень ${idx} · ${label}`;
+}
+
+function renderVideo() {
+  const v = S.vtx;
+  if (!v) return;
+
+  const band = bandOf(v.band);
+  const letter = band ? (band.letter || BAND_LETTER[v.band] || '?') : null;
+
+  $('vChannel').textContent = v.band
+    ? `${letter}${v.channel}` + (band ? ` (${band.name})` : '')
+    : (v.channel ? 'канал ' + v.channel : 'своя частота');
+  $('vFreq').textContent = v.freq ? v.freq + ' МГц' : '—';
+  $('vPower').textContent = powerText(v.power);
+  $('vPit').textContent = v.pit ? 'включён' : 'выключен';
+  const pitBtn = $('btnVtxPit');
+  if (pitBtn) pitBtn.textContent = v.pit ? 'Выключить пит-мод' : 'Включить пит-мод';
+
+  const box = $('vtxWarn');
+  const notes = [];
+  if (!v.ready && v.type !== 0) notes.push('Передатчик ещё не ответил по проводу. Настройки сохранятся, но применятся после перезагрузки.');
+  if (v.type === 0) notes.push('Прошивка не видит передатчик. Канал и мощность менять здесь нельзя.');
+  if (v.lowPower >= 0) notes.push('На разоружённом дроне мощность всегда минимальная: ' + (LOWPOWER_TEXT[v.lowPower] || '—') + '.');
+  if (notes.length) {
+    box.classList.remove('hide');
+    box.innerHTML = notes.join('<br>');
+  } else {
+    box.classList.add('hide');
+  }
+
+  $('vtxEditor').classList.toggle('hide', v.type === 0 || !v.hasTable);
+  if (v.type === 0 || !v.hasTable) return;
+
+  renderBands();
+  renderChannels();
+  renderPowers();
+  updateVtxAvailability();
+}
+
+function renderBands() {
+  const box = $('bandChips');
+  box.innerHTML = '';
+  const v = S.vtx;
+  const pick = (S.vtxSel && S.vtxSel.band) || v.band;
+  for (const b of (S.vtxBands || [])) {
+    const el = document.createElement('div');
+    el.className = 'chip' + (pick === b.num ? ' active' : '');
+    el.innerHTML = `<b>${b.letter || BAND_LETTER[b.num] || '?'}</b><small>${b.name || '—'}</small>`;
+    el.onclick = () => {
+      S.vtxSel = S.vtxSel || {};
+      if (S.vtxSel.band !== b.num) S.vtxSel.channel = null;
+      S.vtxSel.band = b.num;
+      renderBands();
+      renderChannels();
+      updateVtxAvailability();
+    };
+    box.appendChild(el);
+  }
+}
+
+function renderChannels() {
+  const box = $('chanChips');
+  box.innerHTML = '';
+  const sel = S.vtxSel || {};
+  const selBand = sel.band || S.vtx.band;
+  const band = bandOf(selBand);
+  if (!band) return;
+
+  band.freqs.forEach((f, i) => {
+    const ch = i + 1;
+    const el = document.createElement('div');
+    const empty = !f;
+    // подсвечиваем выбор; если канал в этой полке не выбран — текущий канал дрона
+    const shown = sel.channel ? sel.channel : (selBand === S.vtx.band ? S.vtx.channel : 0);
+    const active = (shown === ch);
+    el.className = 'chip' + (active ? ' active' : '') + (empty ? ' off' : '');
+    el.innerHTML = `<b>${band.letter || BAND_LETTER[selBand] || '?'}${ch}</b><small>${empty ? 'нет' : f}</small>`;
+    if (!empty) {
+      el.onclick = () => {
+        S.vtxSel = S.vtxSel || {};
+        S.vtxSel.band = selBand;
+        S.vtxSel.channel = ch;
+        renderChannels();
+        updateVtxAvailability();
+      };
+    }
+    box.appendChild(el);
+  });
+}
+
+function renderPowers() {
+  const box = $('powerChips');
+  box.innerHTML = '';
+  const v = S.vtx;
+  const pick = (S.vtxSel && S.vtxSel.power) || v.power;
+  for (const lv of (S.vtxLevels || [])) {
+    const el = document.createElement('div');
+    const active = (pick === lv.num);
+    el.className = 'chip' + (active ? ' active' : '');
+    el.innerHTML = `<b>${lv.label || lv.num}</b><small>уровень ${lv.num}</small>`;
+    el.onclick = () => {
+      S.vtxSel = S.vtxSel || {};
+      S.vtxSel.power = lv.num;
+      renderPowers();
+      updateVtxAvailability();
+    };
+    box.appendChild(el);
+  }
+}
+
+function vtxTarget() {
+  const v = S.vtx;
+  const sel = S.vtxSel || {};
+  // если полка не менялась — канал берём текущий
+  const band = sel.band || v.band;
+  let channel = v.channel;
+  if (sel.band && sel.band !== v.band) channel = sel.channel || 0;
+  else if (sel.channel) channel = sel.channel;
+  const power = sel.power || v.power;
+  return { band, channel, power };
+}
+
+function updateVtxAvailability() {
+  const v = S.vtx;
+  if (!v) return;
+  const t = vtxTarget();
+  const changed = t.band !== v.band || t.channel !== v.channel || t.power !== v.power;
+  const valid = t.band >= 1 && t.channel >= 1;
+  $('btnApplyVtx').disabled = !changed || !valid || S.writing;
+}
+
+async function applyVtx() {
+  const v = S.vtx;
+  if (!v) return;
+
+  const t = vtxTarget();
+  const band = t.band, channel = t.channel, power = t.power;
+  if (!band || !channel) { toast('Выбери канал', 'err'); return; }
+
+  const bandDef = bandOf(band);
+  const freq = bandDef && bandDef.freqs[channel - 1] ? bandDef.freqs[channel - 1] : v.freq;
+
+  // Запрос MSP_SET_VTX_CONFIG (89). Порядок полей — как читает msp.c:
+  // u16 enc(band,chan), u8 power, u8 pit, u8 lowPower, u16 pitFreq,
+  // u8 band, u8 channel, u16 freq. Таблицу частот не трогаем вообще.
+  const enc = (band - 1) * 8 + (channel - 1);
+  const p = new Uint8Array(11);
+  p[0] = enc & 0xFF; p[1] = (enc >> 8) & 0xFF;
+  p[2] = power;
+  p[3] = v.pit ? 1 : 0;          // пит-мод не трогаем, оставляем как есть
+  p[4] = v.lowPower;
+  p[5] = v.pitFreq & 0xFF; p[6] = (v.pitFreq >> 8) & 0xFF;
+  p[7] = band;
+  p[8] = channel;
+  p[9] = freq & 0xFF; p[10] = (freq >> 8) & 0xFF;
+
+  $('btnApplyVtx').disabled = true;
+  S.writing = true;
+  const ok = await msp(MSP.SET_VTX_CONFIG, p, 2000);
+  const saved = ok ? await msp(MSP.EEPROM_WRITE, null, 4000) : null;
+  S.writing = false;
+
+  if (ok && saved) {
+    S.vtxSel = null;
+    toast('Видео сохранено!', 'good');
+    await readVideo();
+  } else {
+    toast('Не сохранилось. Проверь, что дрон не взведён.', 'err');
+    updateVtxAvailability();
+  }
+}
+
+async function togglePit() {
+  const v = S.vtx;
+  if (!v) return;
+  const want = v.pit ? 0 : 1;
+  const enc = v.band ? (v.band - 1) * 8 + (v.channel - 1) : v.freq;
+  const p = new Uint8Array(7);
+  p[0] = enc & 0xFF; p[1] = (enc >> 8) & 0xFF;
+  p[2] = v.power;
+  p[3] = want;
+  p[4] = v.lowPower;
+  p[5] = v.pitFreq & 0xFF; p[6] = (v.pitFreq >> 8) & 0xFF;
+
+  const r = await msp(MSP.SET_VTX_CONFIG, p, 2000);
+  if (r) {
+    toast(want ? 'Пит-мод включён' : 'Пит-мод выключен', 'good');
+    await readVideo();
+  } else {
+    toast('Передатчик не ответил', 'err');
+  }
+}
+</script>
+<script>
+/* ============ Прошивка ============ */
+
+function fwShow(text, kind) {
+  const box = $('fwWarn');
+  if (!text) { box.classList.add('hide'); return; }
+  box.classList.remove('hide');
+  if (kind === 'bad') {
+    box.style.background = 'rgba(239,68,68,.12)';
+    box.style.borderColor = 'rgba(239,68,68,.32)';
+    box.style.color = '#ffb3b3';
+  } else {
+    box.style.background = '';
+    box.style.borderColor = '';
+    box.style.color = '';
+  }
+  box.innerHTML = text;
+}
+
+async function refreshFwInfo() {
+  $('fwNow').textContent = S.version.major
+    ? `${S.version.major}.${S.version.minor}.${S.version.patch}`
+    : '—';
+  $('fwBoard').textContent = S.board || '—';
+
+  if (S.transport !== 'bridge') {
+    $('fwTool').textContent = 'нет (нужен запуск через start)';
+    return;
+  }
+  try {
+    const r = await fetch('/api/dfu', { cache: 'no-store' });
+    const j = await r.json();
+    $('fwTool').textContent = j && j.found ? 'есть' : 'не найден';
+  } catch (_) {
+    $('fwTool').textContent = '—';
+  }
+}
+
+function escHtml(s) {
+  return String(s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+}
+
+function fmtSize(bytes) {
+  const n = Number(bytes) || 0;
+  if (n >= 1024 * 1024) return (n / (1024 * 1024)).toFixed(1) + ' МБ';
+  if (n >= 1024) return Math.round(n / 1024) + ' КБ';
+  return n + ' байт';
+}
+
+// ---- 1. Скопировать настройки с дрона ----
+async function dumpFromDrone() {
+  if (S.transport !== 'bridge') {
+    fwShow('Скопировать настройки можно, когда приложение запущено через <b>start</b>.', 'bad');
+    return;
+  }
+  const btn = $('btnFwDump');
+  btn.disabled = true;
+  btn.textContent = 'Читаю…';
+  fwShow('');
+
+  try {
+    const ver = S.version.major
+      ? `${S.version.major}.${S.version.minor}.${S.version.patch}` : 'dump';
+    const name = `Mobula6_${ver}_${new Date().toISOString().slice(0, 10)}.txt`;
+    const r = await fetch('/api/dump', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    const j = await r.json();
+
+    if (!j || !j.ok) {
+      fwShow('Не удалось прочитать настройки: ' + escHtml((j && j.error) || 'дрон не ответил'), 'bad');
+      toast('Настройки не скопировались', 'err');
+      return;
+    }
+
+    S.dumpText = j.text || '';
+    S.dumpPath = j.path || '';
+    $('fwDumpText').textContent = S.dumpText.slice(0, 4000) +
+      (S.dumpText.length > 4000 ? '\n…' : '');
+    $('fwDumpBox').classList.remove('hide');
+    toast('Настройки сохранены в файл', 'good');
+    fwShow(`Файл: <b>${escHtml(j.path)}</b><br>` +
+      `${fmtSize(j.size)}, ${S.dumpText.split('\n').length} строк.`);
+  } catch (e) {
+    fwShow('Ошибка: ' + escHtml(e.message || e), 'bad');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Скопировать с дрона';
+  }
+}
+
+// ---- 2. Найти новые прошивки ----
+async function findFirmware() {
+  const btn = $('btnFwFind');
+  btn.disabled = true;
+  btn.textContent = 'Ищу…';
+  fwShow('');
+
+  try {
+    const r = await fetch('/api/firmware/list', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        target: S.target || '',
+        board: S.board || '',
+        fallback: 'CRAZYBEEF4SX1280'
+      })
+    });
+    const j = await r.json();
+    if (!j || !j.ok) throw new Error((j && j.error) || 'сервер прошивок не ответил');
+
+    // Помощник скажет, под каким именем сервер знает плату —
+    // по нему потом и собирается ссылка на файл.
+    if (j.target) S.fwTarget = j.target;
+
+    const list = j.releases || [];
+    if (!list.length) {
+      fwShow('Для этой платы список прошивок пуст.', 'bad');
+      return;
+    }
+
+    S.fwList = list;
+    S.fwSel = pickFirmware(list);
+    renderFwList();
+    $('fwListBox').classList.remove('hide');
+    $('fwSaveBox').classList.remove('hide');
+    toast('Нашёл ' + list.length + ' версий');
+  } catch (e) {
+    fwShow('Не смог получить список: ' + escHtml(e.message || e) +
+      '<br>Проверь интернет на компьютере и попробуй ещё раз.', 'bad');
+    toast('Нет списка прошивок', 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Найти новые прошивки';
+  }
+}
+
+function pickFirmware(list) {
+  const cur = `${S.version.major}.${S.version.minor}.${S.version.patch}`;
+  const stable = list.filter(x => !x.unstable && x.release !== cur);
+  return (stable[0] || list[0]).release;
+}
+
+function renderFwList() {
+  const box = $('fwList');
+  box.innerHTML = '';
+  const cur = `${S.version.major}.${S.version.minor}.${S.version.patch}`;
+
+  for (const f of S.fwList) {
+    const el = document.createElement('div');
+    el.className = 'fw-item' + (S.fwSel === f.release ? ' active' : '');
+
+    let tag = '';
+    if (f.release === cur) tag = '<span class="tag now">стоит сейчас</span>';
+    else if (f.unstable) tag = '<span class="tag beta">тестовая</span>';
+
+    el.innerHTML = `<div>
+        <div class="n">${escHtml(f.release)}</div>
+        <div class="d">${escHtml(f.type)} · ${escHtml(f.date)}</div>
+      </div>${tag}`;
+
+    el.onclick = () => { S.fwSel = f.release; renderFwList(); };
+    box.appendChild(el);
+  }
+}
+
+// ---- 3. Сохранить прошивку ----
+async function saveFirmware() {
+  if (!S.fwSel) { toast('Сначала найди прошивки', 'err'); return; }
+  if (S.transport !== 'bridge') {
+    fwShow('Сохранить файл можно при запуске через <b>start</b>.', 'bad');
+    return;
+  }
+
+  const btn = $('btnFwSave');
+  btn.disabled = true;
+  btn.textContent = 'Скачиваю…';
+  fwShow('');
+
+  try {
+    const r = await fetch('/api/firmware/get', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target: S.fwTarget || S.target || 'CRAZYBEEF4SX1280', release: S.fwSel })
+    });
+    const j = await r.json();
+    if (!j || !j.ok) throw new Error((j && j.error) || 'не скачалось');
+
+    S.fwPath = j.path;
+    toast('Прошивка сохранена', 'good');
+    fwShow(`Файл прошивки: <b>${escHtml(j.path)}</b><br>` +
+      fmtSize(j.size));
+  } catch (e) {
+    fwShow('Не скачалось: ' + escHtml(e.message || e), 'bad');
+    toast('Прошивка не сохранилась', 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Сохранить прошивку';
+  }
+}
+
+// ---- 4. Прошить дрон ----
+// Связь с дроном пропала после ухода в загрузчик.
+// Карточку прошивки оставляем видимой, чтобы итоговое сообщение не исчезло.
+async function flashLostConnection(title) {
+  S.connected = false;
+  dot.className = 'dot off';
+  dot.textContent = '⚪';
+  $('connTitle').textContent = title;
+  $('connSub').textContent = 'Отключи USB, подключи снова и нажми «Подключить дрон»';
+  $('btnConnect').textContent = 'Подключить дрон';
+  ['cardInfo', 'cardBind', 'cardTune', 'cardVideo', 'btnDisconnect'].forEach(id => {
+    $(id).classList.add('hide');
+  });
+  try { await closePort(); } catch (_) {}
+}
+
+async function flashDrone() {
+  if (!S.fwSel) { toast('Сначала найди прошивки', 'err'); return; }
+  if (S.transport !== 'bridge') {
+    fwShow('Прошивать можно только при запуске через <b>start</b>.', 'bad');
+    return;
+  }
+
+  const ok = confirm(
+    'Прошить дрон версией ' + S.fwSel + '?\n\n' +
+    'Настройки будут стёрты. Если ты ещё не нажал «Скопировать с дрона» — ' +
+    'сейчас самое время это сделать.\n\n' +
+    'Во время прошивки не вынимай USB.'
+  );
+  if (!ok) return;
+
+  if (!S.dumpText) {
+    const ok2 = confirm('Настройки не скопированы. Всё равно прошивать?');
+    if (!ok2) return;
+  }
+
+  $('btnFwFlash').disabled = true;
+  $('btnFwFlash').textContent = 'Шью…';
+  fwShow('Ищу файл прошивки и перевожу дрон в режим загрузчика. Это займёт до минуты…');
+
+  try {
+    let path = S.fwPath;
+    if (!path) {
+      const d = await fetch('/api/firmware/get', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: S.fwTarget || S.target || 'CRAZYBEEF4SX1280', release: S.fwSel })
+      }).then(x => x.json());
+      if (!d || !d.ok) throw new Error((d && d.error) || 'файл не скачался');
+      path = d.path;
+      S.fwPath = path;
+    }
+
+    const r = await fetch('/api/flash', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path })
+    });
+    const j = await r.json();
+
+    if (j && j.ok) {
+      toast('Дрон прошит!', 'good');
+      S.fwPath = null;
+      // Связи с дроном больше нет — он ушёл в загрузчик и перезапустился.
+      // Карточку прошивки оставляем на экране, иначе итоговое сообщение
+      // тут же спряталось бы вместе с ней.
+      await flashLostConnection('Дрон прошит');
+      fwShow('Готово. Дрон прошит версией <b>' + escHtml(S.fwSel) + '</b>.<br>' +
+        'Он перезагрузился с заводскими настройками. Отключи USB, подключи снова ' +
+        'и нажми «Подключить дрон» — или верни свои настройки из файла в папке <b>backups</b>.');
+    } else {
+      const why = {
+        'no-dfu-tool': 'Не найден прошивальщик dfu-util.',
+        'no-file': 'Файл прошивки не найден. Нажми «Сохранить прошивку» заново.',
+        'no-dfu-device': 'Дрон не перешёл в режим загрузчика.',
+        'dfu-failed': 'Прошивальщик вернул ошибку.',
+        'timeout': 'Прошивка не успела за 3 минуты.'
+      }[j && j.error] || 'Не получилось.';
+      const details = '<br><span class="mono">' +
+        escHtml(String((j && j.log) || '').slice(-700)) + '</span>';
+      toast('Прошивка не удалась', 'err');
+
+      // Дрон уже перезагружался в загрузчик, поэтому прежней связи с ним нет.
+      // Честно показываем это, а не делаем вид, что всё как раньше.
+      const lost = j && ['no-dfu-device', 'dfu-failed', 'timeout'].includes(j.error);
+      if (lost) await flashLostConnection('Связь потеряна');
+      fwShow(why + details, 'bad');
+    }
+  } catch (e) {
+    fwShow('Ошибка: ' + escHtml(e.message || e), 'bad');
+    toast('Прошивка не удалась', 'err');
+  } finally {
+    $('btnFwFlash').disabled = false;
+    $('btnFwFlash').textContent = 'Прошить дрон';
+  }
+}
+
+$('btnFwDump').onclick = dumpFromDrone;
+$('btnFwFind').onclick = findFirmware;
+$('btnFwSave').onclick = saveFirmware;
+$('btnFwFlash').onclick = flashDrone;
+$('btnFwCopy').onclick = async () => {
+  if (!S.dumpText) return;
+  try {
+    await navigator.clipboard.writeText(S.dumpText);
+    toast('Текст скопирован', 'good');
+  } catch (_) {
+    toast('Браузер не дал скопировать', 'err');
+  }
+};
+</script>
+<script>
+/* ============ События ============ */
+
+$('btnConnect').onclick = () => openPort();
+
+$('btnDisconnect').onclick = async () => {
+  await closePort();
+  setConn(false, 'Не подключён', 'Вставь USB кабель и нажми кнопку ниже');
+};
+
+$('btnBind').onclick = doBind;
+$('btnApplyFeel').onclick = applyFeel;
+$('btnApplyPid').onclick = applyPid;
+$('btnApplyVtx').onclick = applyVtx;
+$('btnVtxPit').onclick = togglePit;
+
+$('btnVtxReload').onclick = async () => {
+  S.vtxBands = null;
+  S.vtxLevels = null;
+  S.vtxSel = null;
+  await readVideo();
+  toast('Прочитал с дрона');
+};
+
+$('btnPidReload').onclick = async () => {
+  await readTuning();
+  toast('Прочитал с дрона');
+};
+
+$('btnPidPreset').onclick = () => {
+  if (!S.pidRaw) { toast('Сначала прочитай пиды с дрона', 'err'); return; }
+  S.pid = JSON.parse(JSON.stringify(FACTORY_PID));
+  renderPidSliders();
+  toast('Заводские пиды — нажми «Сохранить»');
+};
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const which = tab.dataset.tab;
+    $('tab-feel').classList.toggle('hide', which !== 'feel');
+    $('tab-pid').classList.toggle('hide', which !== 'pid');
+  };
+});
+
+// обновление статуса раз в 3 секунды (не мешаем записи)
+setInterval(() => {
+  if (S.connected && !S.pending && !S.writing) readStatus().catch(() => {});
+}, 3000);
+
+// отключение кабеля
+if ('serial' in navigator) {
+  navigator.serial.addEventListener('disconnect', () => {
+    closePort();
+    setConn(false, 'Дрон отключён', 'Кабель вынут. Вставь обратно и подключись.');
+  });
+}
+
+// стартовая проверка окружения
+// Если рядом работает помощник, Web Serial не нужен вообще —
+// поэтому сначала спрашиваем помощника, и только потом пугаем браузером.
+(async () => {
+  const bridge = await bridgeAvailable();
+
+  if (bridge) {
+    $('serialWarn').classList.add('hide');
+    $('btnConnect').disabled = false;
+    if (!bridge.ports || !bridge.ports.length) {
+      $('connSub').textContent = 'Дрон не виден. Вставь USB-кабель.';
+    }
+    return;
+  }
+
+  if (!('serial' in navigator)) {
+    $('serialWarn').classList.remove('hide');
+    $('btnConnect').disabled = true;
+  } else if (location.protocol === 'file:') {
+    $('chromeWarn').classList.remove('hide');
+  }
+})();
+</script>
+</body>
+</html>
