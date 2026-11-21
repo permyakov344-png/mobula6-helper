@@ -203,6 +203,7 @@
   <div class="card hide" id="cardInfo">
     <h2><span class="ico">📋</span> Что за дрон</h2>
     <div class="info">
+      <div class="k">Дрон</div><div class="v" id="iName">—</div>
       <div class="k">Прошивка</div><div class="v" id="iFw">—</div>
       <div class="k">Плата</div><div class="v" id="iBoard">—</div>
       <div class="k">Гироскоп</div><div class="v" id="iGyro">—</div>
@@ -353,6 +354,7 @@
 // ---------- MSP ----------
 const MSP = {
   API_VERSION: 1, FC_VARIANT: 2, FC_VERSION: 3, BOARD_INFO: 4,
+  NAME: 10,
   STATUS: 101, STATUS_EX: 150, ANALOG: 110,
   PID: 112, SET_PID: 202,
   RC_TUNING: 111, SET_RC_TUNING: 204,
@@ -408,6 +410,7 @@ const S = {
   buf: new Uint8Array(0),
   pending: null,          // {cmd, resolve, reject, timer}
   board: null,
+  droneName: null,        // имя дрона из MSP_NAME (Mobula8, Mobula6…)
   pid: null,              // {roll:[P,I,D], pitch:[...], yaw:[...]}
   pidRaw: null,           // исходные 15 байт MSP_PID (включая LEVEL и MAG)
   rates: null,            // разобранные рейты
@@ -710,11 +713,7 @@ function fromHex(hex) {
   return out;
 }
 
-async function mspBridge(cmd, payload, timeout) {
-  const frame = payload
-    ? (cmd > 255 ? frameV2(cmd, payload) : frameV1(cmd, payload))
-    : (cmd > 255 ? frameV2(cmd) : frameV1(cmd));
-
+async function mspBridgeFrame(frame, cmd, timeout) {
   const ctrl = new AbortController();
   const killer = setTimeout(() => ctrl.abort(), timeout + 1200);
   try {
@@ -742,10 +741,23 @@ async function mspBridge(cmd, payload, timeout) {
   }
 }
 
-function msp(cmd, payload = null, timeout = 1500) {
-  // режим через локальный помощник — без окна выбора порта
-  if (S.transport === 'bridge') return mspBridge(cmd, payload, timeout);
+async function mspBridge(cmd, payload, timeout) {
+  // v1 — обычный путь, он работает на всех прошивках
+  const v1 = payload ? frameV1(cmd, payload) : frameV1(cmd);
+  if (cmd <= 255) {
+    const hit = await mspBridgeFrame(v1, cmd, timeout);
+    if (hit) return hit;
+    // Betaflight 4.x на команды записи по v1 не отвечает: дрон их получает,
+    // но молчит, и приложение считает, что «не сохранилось». Проверено на
+    // Mobula 8 (4.4.2): SET_PID по v1 — тишина, по v2 — ACK и значение
+    // меняется. Поэтому команды с данными повторяем в v2.
+    if (!payload) return null;
+    return await mspBridgeFrame(frameV2(cmd, payload), cmd, timeout);
+  }
+  return await mspBridgeFrame(v1, cmd, timeout);
+}
 
+function mspSerialOnce(cmd, payload, timeout, forceV2) {
   return new Promise((resolve) => {
     if (!S.writer) return resolve(null);
     if (S.pending) {
@@ -755,11 +767,25 @@ function msp(cmd, payload = null, timeout = 1500) {
     }
     const timer = setTimeout(() => { S.pending = null; resolve(null); }, timeout);
     S.pending = { cmd: cmd & 0xFFFF, resolve, timer };
+    const v2 = forceV2 || cmd > 255;
     const frame = payload
-      ? (cmd > 255 ? frameV2(cmd, payload) : frameV1(cmd, payload))
-      : (cmd > 255 ? frameV2(cmd) : frameV1(cmd));
+      ? (v2 ? frameV2(cmd, payload) : frameV1(cmd, payload))
+      : (v2 ? frameV2(cmd) : frameV1(cmd));
     S.writer.write(frame).catch(() => {});
   });
+}
+
+async function msp(cmd, payload = null, timeout = 1500) {
+  // режим через локальный помощник — без окна выбора порта
+  if (S.transport === 'bridge') return mspBridge(cmd, payload, timeout);
+
+  const hit = await mspSerialOnce(cmd, payload, timeout, false);
+  if (hit) return hit;
+  // та же причина, что выше: запись по v1 в 4.x остаётся без ответа
+  if (payload && cmd <= 255 && S.writer) {
+    return await mspSerialOnce(cmd, payload, timeout, true);
+  }
+  return null;
 }
 </script>
 <script>
@@ -799,6 +825,44 @@ const ARMING_FLAGS = [
   [29, 'ТУМБЛЕР ARM']
 ];
 
+// В прошивках 4.x набор флагов другой: на месте 20 стоит RPMFILTER, на месте
+// 25 — тумблер ARM, а режимов удержания ещё нет. Сверено с
+// src/main/fc/runtime_config.c: строка armingDisableFlagNames.
+const ARMING_FLAGS_4X = [
+  [0,  'НЕТ ГИРОСКОПА'],
+  [1,  'FAILSAFE'],
+  [2,  'НЕТ СИГНАЛА С ПУЛЬТА'],
+  [3,  'НЕВЕРНЫЙ ПРИЁМНИК'],
+  [4,  'FAILSAFE РЕЖИМА'],
+  [5,  'МОТОРЫ В РАЗГОНЕ'],
+  [6,  'ОБНАРУЖЕНО ПАДЕНИЕ'],
+  [7,  'ГАЗ НЕ В НУЛЕ'],
+  [8,  'ANGLE'],
+  [9,  'ИДЁТ ЗАГРУЗКА'],
+  [10, 'НЕТ PREARM'],
+  [11, 'ПЕРЕГРУЗКА'],
+  [12, 'КАЛИБРОВКА'],
+  [13, 'РЕЖИМ CLI'],
+  [14, 'МЕНЮ OSD'],
+  [15, 'BST'],
+  [16, 'НЕ ЗАКРЫТ MSP'],
+  [17, 'PARALYZE'],
+  [18, 'GPS'],
+  [19, 'RESC'],
+  [20, 'ФИЛЬТР ПО ОБОРОТАМ'],
+  [21, 'НУЖНА ПЕРЕЗАГРУЗКА'],
+  [22, 'DSHOT BITBANG'],
+  [23, 'КАЛИБРОВКА АКСЕЛЕРОМЕТРА'],
+  [24, 'ПРОТОКОЛ МОТОРОВ'],
+  [25, 'ТУМБЛЕР ARM']
+];
+
+// Какой набор флагов у этого дрона. Определяем по версии прошивки:
+// 4.4.2 — это 4, а 2026.6.2 — это 2026.
+function armFlags() {
+  return (S.version && S.version.major >= 2020) ? ARMING_FLAGS : ARMING_FLAGS_4X;
+}
+
 // Флаги, которые нормальны при настройке на столе и НЕ мешают лёту
 const BENIGN = new Set([9, 13, 16, 20, 22, 23, 24, 25, 29]);
 
@@ -809,7 +873,12 @@ async function readInfo() {
   // версия
   const fv = await msp(MSP.FC_VERSION);
   if (fv && fv.data.length >= 3) {
-    S.version = { major: 2000 + fv.data[0], minor: fv.data[1], patch: fv.data[2] };
+    // Betaflight 4.x присылает major = 4, а 2025/2026.x — 25/26
+    // (в один байт год не влезает). Поэтому «2000 + major» верно только
+    // для новых версий, иначе на 4.4.2 получалось бы «2004.4.2».
+    const raw = fv.data[0];
+    const major = raw >= 20 ? 2000 + raw : raw;
+    S.version = { major, minor: fv.data[1], patch: fv.data[2] };
     $('iFw').textContent = `${S.version.major}.${S.version.minor}.${S.version.patch}`;
   } else {
     $('iFw').textContent = S.apiVersion ? 'API ' + S.apiVersion : '—';
@@ -837,6 +906,23 @@ async function readInfo() {
     S.board = boardName || targetName || '';
     S.target = targetName || boardName || '';
     $('iBoard').textContent = S.board || '—';
+
+    // Имя дрона задаётся в Betaflight (MSP_NAME). Оно бывает разным —
+    // Mobula8, Mobula6, или пусто на новой плате. Поэтому заголовок
+    // подстраиваем под факт, а не держим жёстко «Mobula6».
+    const nm = await msp(MSP.NAME, null, 1200);
+    if (nm && nm.data.length) {
+      S.droneName = String.fromCharCode(...nm.data).replace(/\0+$/, '').trim();
+    }
+    if (S.droneName) {
+      $('iName').textContent = S.droneName;
+      const h1 = document.querySelector('h1');
+      if (h1) {
+        const icon = h1.textContent.trim().split(' ')[0] || '🐝';
+        h1.textContent = `${icon} ${S.droneName}`;
+      }
+      document.title = `${S.droneName} — помощник`;
+    }
 
     // кнопка бинда — только если прошивка это умеет
     $('btnBind').disabled = !S.bindSupported;
@@ -875,7 +961,7 @@ async function readStatusInner() {
   $('iGyro').textContent = gyro ? 'работает ✅' : 'НЕ НАЙДЕН ❌';
 
   const active = [];
-  for (const [bit, name] of ARMING_FLAGS) {
+  for (const [bit, name] of armFlags()) {
     if (flags & (1 << bit)) active.push({ bit, name });
   }
 
@@ -977,7 +1063,9 @@ async function readTuning() {
 
   // ---- RATES ----
   const rc = await msp(MSP.RC_TUNING, null, 1500);
-  if (rc && rc.data.length >= 24) {
+  // Длина зависит от версии прошивки: в 4.x это 23 байта, в 2025/2026 — 24
+  // и больше. Требовать 24 нельзя: на Betaflight 4.4.2 рейты не читались вовсе.
+  if (rc && rc.data.length >= 23) {
     S.ratesRaw = rc.data.slice();
     const ratesType = rc.data[22];
     S.ratesType = ratesType;
@@ -1509,7 +1597,11 @@ async function refreshFwInfo() {
   try {
     const r = await fetch('/api/dfu', { cache: 'no-store' });
     const j = await r.json();
-    $('fwTool').textContent = j && j.found ? 'есть' : 'не найден';
+    if (j && j.android) {
+      $('fwTool').textContent = 'только на компьютере';
+    } else {
+      $('fwTool').textContent = j && j.found ? 'есть' : 'не найден';
+    }
   } catch (_) {
     $('fwTool').textContent = '—';
   }
@@ -1540,7 +1632,8 @@ async function dumpFromDrone() {
   try {
     const ver = S.version.major
       ? `${S.version.major}.${S.version.minor}.${S.version.patch}` : 'dump';
-    const name = `Mobula6_${ver}_${new Date().toISOString().slice(0, 10)}.txt`;
+    const who = (S.droneName || S.board || 'Mobula6').replace(/[^\w.-]+/g, '_');
+    const name = `${who}_${ver}_${new Date().toISOString().slice(0, 10)}.txt`;
     const r = await fetch('/api/dump', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

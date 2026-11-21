@@ -28,6 +28,11 @@ COMMON = [
     "docs",
 ]
 
+# APK кладём в каждый архив, чтобы телефон можно было настроить из той же
+# скачанной папки — отдельно его искать не нужно. Если APK ещё не собран,
+# он просто не попадёт в архив.
+APK = "dist/MobulaHelper.apk"
+
 TARGETS = [
     ("Mobula6-Windows", "windows", ["runtime/win", "tools/win"]),
     ("Mobula6-macOS-AppleSilicon", "mac-arm64", ["tools/mac-arm64"]),
@@ -77,6 +82,9 @@ def build(version):
             for rel in COMMON + extra:
                 for rel_file, full in walk(rel):
                     add(zf, rel_file, full, prefix)
+            apk = os.path.join(ROOT, APK)
+            if os.path.isfile(apk):
+                add(zf, "MobulaHelper.apk", apk, prefix)
             # короткая записка внутри архива: что делать дальше
             note = ("1. Распакуй папку целиком.\n"
                     f"2. {'Запусти start.bat (двойной клик)' if tag == 'windows' else 'Запусти start.command (двойной клик)'}.\n"

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Какие USB-устройства считать дроном. Фильтр по классу CDC — так
+     подходят разные платы и загрузчики, а не только одна модель. -->
+<resources>
+    <usb-device class="2" />        <!-- CDC (виртуальный COM-порт) -->
+    <usb-device class="10" />       <!-- CDC Data -->
+    <usb-device vendor-id="1155" /> <!-- 0x0483 STM32 -->
+    <usb-device vendor-id="11836" /><!-- 0x2E3C BetaFPV -->
+</resources>

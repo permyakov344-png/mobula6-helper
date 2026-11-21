@@ -1,16 +1,23 @@
-# Mobula6 — помощник для настройки
+# Mobula — помощник для настройки
 
-**Скачать:** [Windows](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-Windows-1.0.0.zip) ·
-[macOS Apple Silicon](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-macOS-AppleSilicon-1.0.0.zip) ·
-[macOS Intel](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-macOS-Intel-1.0.0.zip) ·
-[Linux](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-Linux-1.0.0.zip)
+Подходит для **Mobula6**, **Mobula8** и других дронов на Betaflight.
+
+**Скачать:** [Windows](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-Windows-1.1.0.zip) ·
+[macOS Apple Silicon](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-macOS-AppleSilicon-1.1.0.zip) ·
+[macOS Intel](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-macOS-Intel-1.1.0.zip) ·
+[Linux](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-Linux-1.1.0.zip) ·
+[Android (APK)](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/MobulaHelper.apk)
 
 Простое приложение в браузере: показывает, подключён ли дрон, помогает связать его с пультом,
 позволяет менять пиды и «сложность» управления, настраивать видео и прошивать дрон.
 Без Betaflight Configurator.
 
-Работает одинаково на **Windows**, **macOS** и **Linux** — из одной и той же папки,
+Работает одинаково на **Windows**, **macOS**, **Linux** и **Android** — из одной и той же папки,
 ничего устанавливать не нужно.
+
+Имя дрона и версия прошивки приложение берёт у самого дрона (`MSP_NAME`,
+`MSP_FC_VERSION`), поэтому заголовок подстраивается сам: `🐝 Mobula6`, `🐝 Mobula8`.
+Прошивки 4.x (`4.4.2`) и 2025/2026.x показываются правильно — без «2004.4.2».
 
 ## Что скачать
 
@@ -18,10 +25,11 @@
 
 | Система | Файл | Размер |
 |---|---|---|
-| **Windows** 10 / 11 (64-бит) | [Mobula6-Windows-1.0.0.zip](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-Windows-1.0.0.zip) | 12 МБ |
-| **macOS**, Apple Silicon (M1–M4) | [Mobula6-macOS-AppleSilicon-1.0.0.zip](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-macOS-AppleSilicon-1.0.0.zip) | 0,8 МБ |
-| **macOS**, Intel | [Mobula6-macOS-Intel-1.0.0.zip](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-macOS-Intel-1.0.0.zip) | 0,8 МБ |
-| **Linux** (64-бит) | [Mobula6-Linux-1.0.0.zip](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-Linux-1.0.0.zip) | 1 МБ |
+| **Windows** 10 / 11 (64-бит) | [Mobula6-Windows-1.1.0.zip](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-Windows-1.1.0.zip) | 12 МБ |
+| **macOS**, Apple Silicon (M1–M4) | [Mobula6-macOS-AppleSilicon-1.1.0.zip](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-macOS-AppleSilicon-1.1.0.zip) | 0,8 МБ |
+| **macOS**, Intel | [Mobula6-macOS-Intel-1.1.0.zip](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-macOS-Intel-1.1.0.zip) | 0,8 МБ |
+| **Linux** (64-бит) | [Mobula6-Linux-1.1.0.zip](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/Mobula6-Linux-1.1.0.zip) | 1 МБ |
+| **Android** 6.0 и новее | [MobulaHelper.apk](https://github.com/permyakov344-png/mobula6-helper/releases/latest/download/MobulaHelper.apk) | 0,05 МБ |
 
 Не знаешь, какой у тебя Mac? Меню Apple → **Об этом Mac**. Если написано
 «Apple M1/M2/M3/M4» — бери Apple Silicon, если «Intel» — Intel.
@@ -59,6 +67,28 @@ Web Serial нужен только как запасной путь, когда 
 **Linux:** двойной клик по **`start.command`** (или в терминале `./start.command`).
 Нужен Perl — он есть в любом обычном дистрибутиве; Python тоже подойдёт.
 
+## Android: с телефона
+
+Телефон подключается к дрону через **OTG-переходник** (USB-C → обычный USB).
+Ставится один файл: `MobulaHelper.apk`.
+
+1. Скопируй `MobulaHelper.apk` на телефон (кабель, облако, Telegram — как удобно).
+2. Открой файл. Android спросит разрешение на установку из этого источника —
+   разреши (это обычная установка, не из Play Маркета).
+3. Воткни дрон, открой приложение **Mobula**. Android спросит доступ к USB —
+   разреши и нажми **«Подключить дрон»**.
+
+Внутри APK работает тот же помощник, только на телефоне: страница та же самая,
+поэтому все разделы выглядят и работают так же, как на компьютере.
+
+Чего на телефоне **нет** и почему:
+
+- **Прошивка** — нужен `dfu-util`, его в Android нет. Раздел останется, но
+  напишет «только на компьютере».
+- **Бэкап настроек** — читается через CLI, а полного CLI-моста в Android нет.
+
+Всё остальное — подключение, пиды, рейты, видео, бинд — работает.
+
 
 ## Если дрон не находится
 
@@ -90,6 +120,8 @@ Web Serial нужен только как запасной путь, когда 
 | `runtime/win/python` | готовый Python для Windows, чтобы ничего не устанавливать |
 | `tools/win`, `tools/mac-arm64`, `tools/mac-x64`, `tools/linux` | `dfu-util` — программа, которая пишет прошивку в дрон |
 | `_lib/serial` | готовая библиотека `pyserial`, чтобы ничего не устанавливать |
+| `MobulaHelper.apk` | то же приложение для Android-телефона (есть и в папке, и отдельно в релизе) |
+| `android/` | исходники APK, `tools/build-apk.py` — сборка без Android Studio |
 | `backups` | сюда сохраняются дампы настроек и скачанные прошивки (создаётся при первом использовании) |
 
 Помощник выбирается автоматически:
@@ -174,6 +206,13 @@ perl bridge.pl 8000 --open    # или: python3 bridge.py 8000 --open
 официального сервера Betaflight: текущая версия помечена «стоит сейчас»,
 тестовые сборки — «тестовая».
 
+### 7. На телефоне
+
+![Приложение на Android](docs/screens/android.png)
+
+Тот же экран в APK на эмуляторе Android 14. В эмуляторе нет настоящего USB,
+поэтому написано «Дрон не найден» — это правильный ответ, а не ошибка сборки.
+
 ## Что умеет
 
 | Раздел | Что делает |
@@ -241,7 +280,8 @@ MSP по последовательному порту, 115200 бод, MSP v1 и
 
 - `MSP_API_VERSION` 1, `MSP_FC_VERSION` 3, `MSP_BOARD_INFO` 4
 - `MSP_PID` 112 / `MSP_SET_PID` 202 — 15 байт, порядок `ROLL, PITCH, YAW, LEVEL, MAG`
-- `MSP_RC_TUNING` 111 / `MSP_SET_RC_TUNING` 204 — 24 байта
+- `MSP_RC_TUNING` 111 / `MSP_SET_RC_TUNING` 204 — 23–24 байта (в 4.4.2 приходит 23;
+  приложение принимает любой размер от 23 байт)
 - `MSP_STATUS_EX` 150, `MSP_ANALOG` 110, `MSP_EEPROM_WRITE` 250
 - `MSP_VTX_CONFIG` 88 / `MSP_SET_VTX_CONFIG` 89 — видео: бэнд, канал, частота, мощность, пит-мод
 - `MSP_VTXTABLE_BAND` 137 / `MSP_VTXTABLE_POWERLEVEL` 138 — чтение таблицы частот и уровней мощности
@@ -261,9 +301,19 @@ MSP по последовательному порту, 115200 бод, MSP v1 и
 (`src/main/common/crc.h`). Это важная деталь: с полиномом `0x07` дрон молча
 игнорирует v2-команды, и бинд «не срабатывает».
 
+**Запись настроек на 4.x.** На Betaflight 4.4.2 команды записи (`MSP_SET_PID`,
+`MSP_SET_RC_TUNING`, `MSP_SET_ARMING_CONFIG`) не отвечают, если пришли по MSP v1:
+дрон их не применяет и молчит. По MSP v2 те же команды отвечают `ACK` и значение
+действительно меняется (проверено: Roll P `53 → 60 → 53` на Mobula 8).
+Поэтому приложение отправляет запись по v1 и, если ответа нет, повторяет тот же
+пакет по v2. На 2026.x всё проходит по v1 с первого раза — старое поведение
+не изменилось.
+
 ### Проверено на живом дроне
 
-Плата `CRAZYBEEF4SX1280`, прошивка `2026.6.2`, порт `/dev/cu.usbmodem0x80000001`:
+## Проверено на живом дроне
+
+Плата `CRAZYBEEF4SX1280`, прошивка `2026.6.2`, порт `/dev/cu.usbmodem0x80000001` (Mobula6):
 
 - подключение через помощника — без окна выбора порта;
 - чтение: версия `2026.6.2`, плата `CRAZYBEEF4SX1280`, гироскоп «работает», батарея, статус приёмника;
@@ -271,6 +321,15 @@ MSP по последовательному порту, 115200 бод, MSP v1 и
 - запись пида: `120 → 121 → 120`, `LEVEL` и `MAG` не тронуты;
 - запись рейтов: менялся только `expo`, служебные байты 16–21 сохранились;
 - бинд: команда доходит, дрон отвечает (пульт был выключен, поэтому связи не появилось).
+
+**Mobula 8**, прошивка `4.4.2` (API 1.45), имя `Mobula8`, плата `CRAZYBEEF4SX1280`:
+
+- заголовок сам стал «🐝 Mobula8», версия показана как `4.4.2`;
+- пиды читаются и пишутся (запись уходит по v2, см. выше);
+- рейты читаются (23 байта) и пишутся: проверено `dps 670 → 700 → 670`;
+- видео: `R6 (RACEBAND)`, уровень 3, 25 мВт — чтение и сохранение проходят;
+- в статусе взведения — «НЕТ СИГНАЛА С ПУЛЬТА» (у 4.x другой набор флагов,
+  поэтому в приложении отдельная таблица `ARMING_FLAGS_4X`).
 
 Версия на Perl проверена отдельно — на эмуляторе дрона по псевдотерминалу:
 подключение, чтение пидов, запись `85 → 86 → 85` с сохранением, рейты и бинд
